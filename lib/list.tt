@@ -1,0 +1,34 @@
+package list
+
+templates max
+  <[](0)> VOID!
+  <> @: $(1); $(2..-1)... -> (<$@max~..> @max: $;) -> !VOID
+     $@ !
+end max
+
+templates min
+  <[](0)> VOID!
+  <> @: $(1); $(2..-1)... -> (<..~$@min> @min: $;) -> !VOID
+     $@ !
+end min
+
+templates sum
+  <[](0)> VOID!
+  <> @: $(1); $(2..-1)... -> @: $@ + $;
+     $@ !
+end sum
+
+templates sort@{comparator:}
+  @: [];
+  $ -> #
+  <[](2..)>
+    def pivot: $(1);
+    [ [ $(2..-1)... -> (
+      <?([$, $pivot] -> comparator <..0>)>
+        $ !
+      <>
+        ..|@sort: $;
+     )] -> sort@{comparator:comparator}..., $pivot, $@ -> sort@{comparator:comparator}... ] !
+   <>
+     $ !
+end sort
