@@ -1,21 +1,21 @@
 package list
 
 templates max
-  <[](0)> VOID!
+  <[](0)> !VOID
   <> @: $(1); $(2..-1)... -> (<$@max~..> @max: $;) -> !VOID
      $@ !
 end max
 
 templates min
-  <[](0)> VOID!
+  <[](0)> !VOID
   <> @: $(1); $(2..-1)... -> (<..~$@min> @min: $;) -> !VOID
      $@ !
 end min
 
 templates sum
-  <[](0)> VOID!
-  <> @: $(1); $(2..-1)... -> @: $@ + $;
-     $@ !
+  @: 0;
+  $... -> @: $@ + $;
+  $@ !
 end sum
 
 templates sort@{comparator:}

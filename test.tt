@@ -1,0 +1,23 @@
+import 'lib/list'
+import 'lib/hash'
+
+[1, 5, 3, 9, 2] -> list/max -> (<9> 'Pass' ! <> 'Fail: max is $; should be 9' !) -> !OUT::write
+
+[] -> list/max -> 'Fail: max should not output $;' -> !OUT::write
+
+[1, 5, 3, 9, 2] -> list/min -> (<1> 'Pass' ! <> 'Fail: min is $; should be 1' !) -> !OUT::write
+
+[] -> list/min -> 'Fail: min should not output $;' -> !OUT::write
+
+[1, 5, 3, 9, 2] -> list/sum -> (<20> 'Pass' ! <> 'Fail: sum is $; should be 20' !) -> !OUT::write
+
+[] -> [ $ ->list/sum ] -> (<[<0>](1)> 'Pass' ! <> 'Fail: sum of empty list should be 0' !) -> !OUT::write
+
+templates onA
+  <?($(1).a <..~$(2).a>)> -1 !
+  <?($(1).a <$(2).a>)> 0 !
+  <> 1 !
+end onA
+
+[{a: 6, b: 'j'}, {a: 3, b: 'j'}, {a: 1, b: 'j'}, {a: 9, b: 'j'}, {a: 2, b: 'j'}] -> list/sort@{comparator: onA}
+-> !OUT::write
