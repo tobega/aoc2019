@@ -1,6 +1,9 @@
 package hash
 
 processor Set
+  source values
+    $@Set... ... !
+  end values
   templates add
     def val: $;
     def ind: $::hashCode -> $ mod $@Set::length + 1;
@@ -20,6 +23,15 @@ processor Set
 end Set
 
 processor Map
+  source entries
+    $@Map... ... !
+  end entries
+  templates get
+    def key: $;
+    def ind: $::hashCode -> $ mod $@Map::length + 1;
+    $@Map($ind)... -> #
+    <{key: <$key>}> $.value !
+  end get
   templates put
     def val: $;
     def ind: $.key::hashCode -> $ mod $@Map::length + 1;
@@ -30,7 +42,7 @@ processor Map
       $old... ... -> put -> !VOID
       $val -> put !
     <>
-      $ -> [i](<{key: <$val.key>}> ^@Map($ind;$i) !) !
+      $ -> [i](<{key: <$val.key>}> ^@Map($ind;$i) !)... !
       ..|@Map($ind): $val;
   end put
   @:[1..32 -> []];

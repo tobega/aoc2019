@@ -19,5 +19,33 @@ templates onA
   <> 1 !
 end onA
 
-[{a: 6, b: 'j'}, {a: 3, b: 'j'}, {a: 1, b: 'j'}, {a: 9, b: 'j'}, {a: 2, b: 'j'}] -> list/sort@{comparator: onA}
--> !OUT::write
+def expectedSorted: [{a: 1, b: 'l'}, {a: 2, b: 'n'}, {a: 3, b: 'k'}, {a: 6, b: 'j'}, {a: 9, b: 'm'}];
+
+[{a: 6, b: 'j'}, {a: 3, b: 'k'}, {a: 1, b: 'l'}, {a: 9, b: 'm'}, {a: 2, b: 'n'}] -> list/sort@{comparator: onA}
+-> (<$expectedSorted> 'Pass' ! <> 'Fail, not sorted $;' !) -> !OUT::write
+
+def set: [1, 1, 2, 5, 2, 2, 5, 1] -> hash/Set;
+
+[ $set::values ] -> (<[<1>]> $ ! <> 'Fail $;' !) -> (<[<2>]> $ ! <> 'Fail $;' !) -> (<[<5>]> $ ! <> 'Fail $;' !)
+  -> (<[](3)> 'Pass' ! <> 'Fail $;' !) -> !OUT::write
+
+1 -> set::add -> (<0> 'Pass' ! <> 'Fail: set should contain 1' !) -> !OUT::write
+
+4 -> set::add -> (<1> 'Pass' ! <> 'Fail: set should not contain 4' !) -> !OUT::write
+
+4 -> set::add -> (<0> 'Pass' ! <> 'Fail: set should now contain 4' !) -> !OUT::write
+
+def map: [{key: 'a', value: 1}, {key: 'b', value: 2}] -> hash/Map;
+
+[ $map::entries ] -> (<[<{key: <'a'>, value: <1>}>]> $ ! <> 'Fail $;' !) -> (<[<{key: <'b'>, value: <2>}>]> $ ! <> 'Fail $;' !)
+  ->  (<[](2)> 'Pass' ! <> 'Fail $;' !) -> !OUT::write
+
+'a' -> map::get -> (<1> 'Pass' ! <> 'Fail: a should be mapped to 1' !) -> !OUT::write
+
+def expectedEvicted: {key: 'a', value: 1};
+{key: 'a', value: 33} -> map::put -> (<$expectedEvicted> 'Pass' ! <> 'Fail: should evict $expectedEvicted; was $;' !)
+  -> !OUT::write
+
+'a' -> map::get -> (<33> 'Pass' ! <> 'Fail: a should now be mapped to 33' !) -> !OUT::write
+
+['c' -> map::get] -> (<[](0)> 'Pass' ! <> 'Fail: c should not be mapped' !) -> !OUT::write
