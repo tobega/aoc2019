@@ -4,6 +4,20 @@ processor Set
   source values
     $@Set... ... !
   end values
+  templates remove
+    def val: $;
+    def ind: $::hashCode -> $ mod $@Set::length + 1;
+    $@Set($ind) -> [i](<$val> ^@Set($ind;$i) !) -> #
+    <[](0)> 0 !
+    <> 1 !
+  end remove
+  templates contains
+    def val: $;
+    def ind: $::hashCode -> $ mod $@Set::length + 1;
+    $@Set($ind) -> [i](<$val> $i !) -> #
+    <[](0)> 0 !
+    <> 1 !
+  end contains
   templates add
     def val: $;
     def ind: $::hashCode -> $ mod $@Set::length + 1;
@@ -32,6 +46,11 @@ processor Map
     $@Map($ind)... -> #
     <{key: <$key>}> $.value !
   end get
+  templates remove
+    def key: $;
+    def ind: $::hashCode -> $ mod $@Map::length + 1;
+    $@Map($ind) -> [i](<{key: <$key>}> ^@Map($ind;$i) !)... -> $.value !
+  end remove
   templates put
     def val: $;
     def ind: $.key::hashCode -> $ mod $@Map::length + 1;
@@ -42,7 +61,7 @@ processor Map
       $old... ... -> put -> !VOID
       $val -> put !
     <>
-      $ -> [i](<{key: <$val.key>}> ^@Map($ind;$i) !)... !
+      $ -> [i](<{key: <$val.key>}> ^@Map($ind;$i) !)... -> $.value !
       ..|@Map($ind): $val;
   end put
   @:[1..32 -> []];
