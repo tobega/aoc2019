@@ -33,8 +33,7 @@ def expectedSorted: [{a: 1, b: 'l'}, {a: 2, b: 'n'}, {a: 3, b: 'k'}, {a: 6, b: '
 
 def set: [1, 1, 2, 5, 2, 2, 5, 1] -> hash/Set;
 
-[ $set::values ] -> (<[<1>]> $ ! <> 'Fail $;' !) -> (<[<2>]> $ ! <> 'Fail $;' !) -> (<[<5>]> $ ! <> 'Fail $;' !)
-  -> (<[](3)> 'Pass' ! <> 'Fail $;' !) -> !OUT::write
+[ $set::values ] -> (<[<1>,<2>,<5>](3)> 'Pass' ! <> 'Fail $;' !) -> !OUT::write
 
 1 -> set::add -> (<0> 'Pass' ! <> 'Fail: set should contain 1' !) -> !OUT::write
 
