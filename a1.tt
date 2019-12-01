@@ -9,6 +9,9 @@ def moduleWeights: [ $IN::lines -> readWeight ];
 // part 1
 [ $moduleWeights... -> $ ~/ 3 - 2 ] -> list/sum -> !OUT::write
 
+'
+' -> !OUT::write
+
 // part 2
 templates fuelFuel
   @: 0;
@@ -23,3 +26,23 @@ templates fuelFuel
 end fuelFuel
 
 [ $moduleWeights... -> fuelFuel ] -> list/sum -> !OUT::write
+
+// Alternative code
+
+templates fuelWeight
+  $ ~/ 3 - 2 -> (<0~..> $ !) !
+end fuelWeight
+
+'
+' -> !OUT::write
+
+[ $moduleWeights... -> fuelWeight ] -> list/sum -> !OUT::write
+
+templates selfCarryingFuel
+  $ -> fuelWeight -> [ $, $ -> selfCarryingFuel]... !
+end selfCarryingFuel
+
+'
+' -> !OUT::write
+
+[ $moduleWeights... -> selfCarryingFuel ] -> list/sum -> !OUT::write
