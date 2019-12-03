@@ -45,9 +45,9 @@ def set: [1, 1, 2, 5, 2, 2, 5, 1] -> hash/Set;
 
 5 -> set::remove -> (<0> 'Pass' ! <> 'Fail: set should not remove 5 again' !) -> !OUT::write
 
-4 -> set::contains -> (<1> 'Pass' ! <> 'Fail: set should contain 4' !) -> !OUT::write
+4 -> set::isMember -> (<1> 'Pass' ! <> 'Fail: 4 should be a member' !) -> !OUT::write
 
-5 -> set::contains -> (<0> 'Pass' ! <> 'Fail: set should not contain 5' !) -> !OUT::write
+5 -> set::isMember -> (<0> 'Pass' ! <> 'Fail: 5 should not be a member' !) -> !OUT::write
 
 def map: [{key: 'a', value: 1}, {key: 'b', value: 2}] -> hash/Map;
 
@@ -56,7 +56,7 @@ def map: [{key: 'a', value: 1}, {key: 'b', value: 2}] -> hash/Map;
 
 'a' -> map::get -> (<1> 'Pass' ! <> 'Fail: a should be mapped to 1' !) -> !OUT::write
 
-[{key: 'a', value: 33} -> map::put] -> (<[<1>](1)> 'Pass' ! <> 'Fail: should evict 1 for a but was $;' !)
+[{key: 'a', value: 33} -> map::put] -> (<[<={key: 'a', value: 1}>](1)> 'Pass' ! <> 'Fail: should evict 1 for a but was $;' !)
   -> !OUT::write
 
 'a' -> map::get -> (<33> 'Pass' ! <> 'Fail: a should now be mapped to 33' !) -> !OUT::write

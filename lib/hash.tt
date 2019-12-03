@@ -11,13 +11,13 @@ processor Set
     <[](0)> 0 !
     <> 1 !
   end remove
-  templates contains
+  templates isMember // returning $ more helpful: 1
     def val: $;
     def ind: $::hashCode -> $ mod $@Set::length + 1;
     $@Set($ind) -> [i](<$val> $i !) -> #
     <[](0)> 0 !
     <> 1 !
-  end contains
+  end isMember
   templates add
     def val: $;
     def ind: $::hashCode -> $ mod $@Set::length + 1;
@@ -61,7 +61,7 @@ processor Map
       $old... ... -> put -> !VOID
       $val -> put !
     <>
-      $ -> [i](<{key: <$val.key>}> ^@Map($ind;$i) !)... -> $.value !
+      $ -> [i](<{key: <$val.key>}> ^@Map($ind;$i) !)... !
       ..|@Map($ind): $val;
   end put
   @:[1..32 -> []];

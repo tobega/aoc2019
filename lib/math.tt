@@ -1,0 +1,16 @@
+package math
+
+templates abs
+  <0..> $ !
+  <..0> -$ !
+end abs
+
+templates manhattanDistance
+  @: 0;
+  $ -> #
+  $@ !
+  <[]> $... -> #
+  <{}> $... -> $::value -> #
+  <0..> @: $@ + $;
+  <..0> @: $@ - $;
+end manhattanDistance

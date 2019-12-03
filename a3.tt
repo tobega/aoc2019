@@ -1,0 +1,50 @@
+import 'lib/hash'
+import 'lib/math'
+import 'lib/list'
+
+composer wire
+  [ <wiring>+ ]
+  rule wiring: { direction: <'[U,D,L,R]'>, distance: <INT> } (<','>?)
+end wire
+
+//def wires: [ 'R8,U5,L5,D3' -> wire, 'U7,R6,D4,L4' -> wire ];
+//$wires -> !OUT::write
+def wires: [$IN::lines -> wire];
+
+templates mapWirePositions
+  @: {x: 0, y: 0};
+  $... -> #
+
+  <{direction: <='U'>}>
+    1..$.distance -> { x: $@.x, y: $@.y + $ } !
+    (y: $@.y + $.distance) -> ..|@: $;
+
+  <{direction: <='D'>}>
+    1..$.distance -> { x: $@.x, y: $@.y - $ } !
+    (y: $@.y - $.distance) -> ..|@: $;
+
+  <{direction: <='L'>}>
+    1..$.distance -> { x: $@.x - $, y: $@.y } !
+    (x: $@.x - $.distance) -> ..|@: $;
+
+  <{direction: <='R'>}>
+    1..$.distance -> { x: $@.x + $, y: $@.y } !
+    (x: $@.x + $.distance) -> ..|@: $;
+end mapWirePositions
+
+//part 1
+def wire1: [] -> hash/Set;
+$wires(1) -> mapWirePositions -> wire1::add -> !VOID
+
+[ $wires(2) -> mapWirePositions -> \(<?($ -> wire1::isMember <=1>)> $ !\)
+  -> math/manhattanDistance ] -> list/min -> !OUT::write
+
+'
+' -> !OUT::write
+
+//part 2
+def wire1Steps: [] -> hash/Map;
+// The double put replaces the first value in case of multiples
+[ $wires(1) -> mapWirePositions ] -> \[i]( { key: $, value: $i } -> wire1Steps::put -> wire1Steps::put !\) -> !VOID
+
+[ $wires(2) -> mapWirePositions ] -> \[i]( $ -> wire1Steps::get -> $ + $i ! \) -> list/min -> !OUT::write
