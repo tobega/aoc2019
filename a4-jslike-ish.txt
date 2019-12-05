@@ -10,7 +10,7 @@ end valid
 
 //part 1
 validPasswords = [ 284639..748759 -> valid ];
-validPasswords.map(a) -> a::length .map(l -> OUT::write)
+validPasswords.map(a -> a::length).map(l -> OUT::write)
 
 '
 ' -> !OUT::write
@@ -18,9 +18,9 @@ validPasswords.map(a) -> a::length .map(l -> OUT::write)
 // part 2
 templates runLengths(in)
   breaks = [ in.map(a[i] -> { match <?(i match <=1>)>: emit 1 match <~?(in[i] match <in[i - 1]>)>: emit i })..., in::length + 1];
-  breaks.map(a[i] -> { match <?(i match <2..>)> emit a[i] - breaks[i - 1] }).map(runs -> emit runs)
+  breaks.map(a[i] -> { match <?(i match <2..>)>: emit a[i] - breaks[i - 1] }).map(runs -> emit runs)
 end runLengths
 
 [ $validPasswords... .map(pw) -> {
-  [ '$pw;'... ].map(digits -> runLengths).map(runs -> { match <[<=2>]> emit pw }).map(valid -> emit valid)
+  [ '$pw;'... ].map(digits -> runLengths).map(runs -> { match <[<=2>]>: emit pw }).map(valid -> emit valid)
 } ] .map(a -> a::length).map(l -> OUT::write)
