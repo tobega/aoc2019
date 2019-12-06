@@ -1,0 +1,41 @@
+import 'lib/list'
+
+composer orbit
+  [ <~'\)'> (<'\)'>) <'.*'> ]
+end orbit
+
+def orbitMap: [ $IN::lines -> orbit ];
+
+templates allOrbits@{map:}
+  @: [];
+  [ {orbitter: $, orbits:[]} ] -> #
+  <[](0)> $@ !
+  <>
+    def next: $(1);
+    ..|@: $next;
+    def orbits: [ $next.orbits..., $next.orbitter ];
+    [ $(2..-1)...,
+      $map... -> (<?($(1) <$next.orbitter>)> $!)
+        -> { orbitter: $(2), orbits: $orbits} ] -> #
+end allOrbits
+
+def aroundCOM: 'COM' -> allOrbits@{map: $orbitMap};
+
+[ $aroundCOM... -> $.orbits::length ] -> list/sum -> !OUT::write
+'
+' -> !OUT::write
+
+templates findPath
+  def ends: $;
+  def fromOrbits: $aroundCOM... -> \(<{orbitter: <=$ends(1)>}> $.orbits !\);
+  def toOrbits: $aroundCOM... -> \(<{orbitter: <=$ends(2)>}> $.orbits !\);
+  1 -> #
+
+  <?($fromOrbits($) <=$toOrbits($)>)>
+    $ + 1 -> #
+
+  <>
+    [ $fromOrbits(-1..$:-1)..., $toOrbits($-1..-1)... ] !
+end findPath
+
+['YOU', 'SAN'] -> findPath -> $::length - 1 -> !OUT::write
