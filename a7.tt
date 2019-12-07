@@ -8,9 +8,29 @@ templates thrusters
   @: $;
   0 -> #
   <?($@ <=[]>)> $ !
-  <> def val: $; $amplifierControllerSoftware -> aoc/computer@{inputs: [^@(1), $val]} -> #
+  <> def val: $; $amplifierControllerSoftware -> aoc/compute@{inputs: [^@(1), $val]} -> #
 end thrusters
 
-def valueSet: [ 1..5 -> $ - 1];
+def valueSet: [ 0..4 ];
 
-[ 5 -> combinatorics/lexicalPermutations -> $valueSet($) -> thrusters ] -> list/max -> !OUT::write
+[ $valueSet::length -> combinatorics/lexicalPermutations -> $valueSet($) -> thrusters ] -> list/max -> !OUT::write
+'
+' -> !OUT::write
+
+templates feedbackMachines
+  @: [1..$::length -> $amplifierControllerSoftware -> aoc/MarkII ];
+  $ -> \[i]($ -> @feedbackMachines($i)::proceed ! \) -> \(<~[](0)> 'WTF! $;' ! \) -> !OUT::write
+  { out: 0, to: 1 } -> #
+
+  <{result: <>, to: <=1>}> $.result !
+
+  <{out: <>, to: <>}|{result:<>}>
+    def stage: $;
+    $stage -> \(<{out:<>}> $.out ! <> $.result !\) -> @($stage.to)::proceed -> { $..., to: $stage.to mod $@::length + 1 } -> #
+
+  <>
+    'Error $;' -> !OUT::write
+end feedbackMachines
+
+def feedbackPhases: [ 5..9 ];
+[ $feedbackPhases::length -> combinatorics/lexicalPermutations -> $feedbackPhases($) -> feedbackMachines ] -> list/max -> !OUT::write
