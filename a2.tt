@@ -1,40 +1,13 @@
-composer parse
-  [ <code>+ ]
-  rule code: <INT> (<','>?)
-end parse
+import 'aoc'
 
 // def program: [ 1,9,10,3,2,3,11,0,99,30,40,50 ];
-def program: $IN::lines -> parse;
+def program: $IN::lines -> aoc/parseIntcode;
 
-templates intcode
-  @: $;
-  1 -> #
-
-  <?($@($) <=99>)>
-    $@(1) !
-
-  <?($@($) <=1>)>
-    def a: $@($ + 1) + 1;
-    def b: $@($ + 2) + 1;
-    def result: $@($ + 3) + 1;
-    @($result): $@($a) + $@($b);
-    $ + 4 -> #
-
-  <?($@($) <=2>)>
-    def a: $@($ + 1) + 1;
-    def b: $@($ + 2) + 1;
-    def result: $@($ + 3) + 1;
-    @($result): $@($a) * $@($b);
-    $ + 4 -> #
-
-  <> 'Error! $;' !
-end intcode
-
-// $program -> intcode -> !OUT::write
+// $program -> aoc/compute@{inputs:[]} -> !OUT::write
 
 def state1202: [ $program(1), 12, 2, $program(4..-1)...];
 
-$state1202 -> intcode -> !OUT::write
+$state1202 -> aoc/compute@{inputs:[]} -> !OUT::write
 
 '
 ' -> !OUT::write
@@ -42,6 +15,6 @@ $state1202 -> intcode -> !OUT::write
 0..99 -> \(def noun: $;
   0..99 -> \(def verb: $;
     def state: [ $program(1), $noun, $verb, $program(4..-1)...];
-    $state -> intcode -> \(<=19690720> 1! \) -> 100 * $noun + $verb !
+    $state -> aoc/compute@{inputs:[]} -> \(<=19690720> 1! \) -> 100 * $noun + $verb !
   \) !
 \) -> !OUT::write
