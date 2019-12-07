@@ -1,0 +1,36 @@
+import 'lib/list'
+import 'lib/hash'
+
+composer orbit
+  { value: <~'\)'>, (<'\)'>) key: <'.*'> }
+end orbit
+
+def orbitMap: [ $IN::lines -> orbit ] -> hash/Map;
+
+templates resolveOrbits
+  def orbitter: $;
+  $ -> orbitMap::get -> #
+  <~[]>
+      def orbits: [ $ , $ -> resolveOrbits... ];
+      $orbits -> { key: $orbitter, value: $ } -> orbitMap::put -> !VOID
+      $orbits !
+  <> $ !
+end resolveOrbits
+
+[ $orbitMap::entries -> $.key -> resolveOrbits -> $::length ] -> list/sum -> !OUT::write
+'
+' -> !OUT::write
+
+templates findPath
+  def fromOrbits: $(1) -> orbitMap::get;
+  def toOrbits: $(2) -> orbitMap::get;
+  -1 -> #
+
+  <?($fromOrbits($) <=$toOrbits($)>)>
+    $ - 1 -> #
+
+  <>
+    [ $fromOrbits(1..$)..., $toOrbits($+1..1:-1)... ] !
+end findPath
+
+['YOU', 'SAN'] -> findPath -> $::length - 1 -> !OUT::write
