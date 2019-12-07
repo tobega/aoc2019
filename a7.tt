@@ -1,0 +1,16 @@
+import 'aoc'
+import 'lib/combinatorics'
+import 'lib/list'
+
+def amplifierControllerSoftware: $IN::lines -> aoc/parseIntcode;
+
+templates thrusters
+  @: $;
+  0 -> #
+  <?($@ <=[]>)> $ !
+  <> def val: $; $amplifierControllerSoftware -> aoc/computer@{inputs: [^@(1), $val]} -> #
+end thrusters
+
+def valueSet: [ 1..5 -> $ - 1];
+
+[ 5 -> combinatorics/lexicalPermutations -> $valueSet($) -> thrusters ] -> list/max -> !OUT::write
