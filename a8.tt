@@ -41,5 +41,5 @@ templates composeImage
 end composeImage
 
 $message -> composeImage... ->
-'$... -> \(<=0> ' ' ! <=1> '*' !\);
+'$... -> \(<=0> '░' ! <=1> '█' !\);
 ' -> !OUT::write
