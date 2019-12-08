@@ -1,0 +1,45 @@
+composer toInt
+  <INT>
+end toInt
+
+composer decodeSpaceImageFormat@{width:, height:}
+  [ <layer>+ ]
+  rule layer: [ <row>=$height ]
+  rule row: [ <'.'>=$width -> toInt ]
+end decodeSpaceImageFormat
+
+def message: $IN::lines -> decodeSpaceImageFormat@{width:25, height:6}; // only expect one line
+
+templates part1
+  templates spectrum
+    @: [ 0..2 -> 0 ];
+    $ -> #
+    $@ !
+    <[]> $... -> #
+    <> $ + 1 -> @($): $@($) + 1;
+  end spectrum
+  @: $(1) -> spectrum;
+  $(2..-1)... -> spectrum -> #
+  $@(2) * $@(3) !
+
+  <?($(1) <..~$@(1)>)> @: $;
+end part1
+
+$message -> part1 -> !OUT::write
+'
+' -> !OUT::write
+
+templates composeImage
+  templates findColour
+    def layers: $;
+    1 -> #
+    <?($layers($) <=2>)> $ + 1 -> #
+    <> $layers($) !
+  end findColour
+  def layers: $;
+  $layers(1) -> \[row]($ -> \[col]($layers(1..-1;$row;$col) -> findColour !\) !\) !
+end composeImage
+
+$message -> composeImage... ->
+'$... -> \(<=0> ' ' ! <=1> '*' !\);
+' -> !OUT::write
