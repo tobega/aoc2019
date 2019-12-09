@@ -14,23 +14,27 @@ templates compute@{inputs:}
 end compute
 
 processor MarkII
-  @: { memory: $, position: 1, input:[] };
+  @: { memory: $, base: 0, position: 1, input:[] };
 
   templates opcode
     $@MarkII.memory($) mod 100 !
   end opcode
-  templates params@{n:}
+  templates paramAddress@{n:}
     templates modes
       @: $ ~/ 100;
       [ 1..$n -> ( $@modes mod 10 ! @modes: $@modes ~/ 10;) ] !
     end modes
-    def base: $;
-    $@MarkII.memory($) -> modes -> \[i](def val: $@MarkII.memory($base + $i);
-      $ -> #
-      <=0> $@MarkII.memory($val + 1) !
-      <=1> $val !
+    def position: $;
+    $@MarkII.memory($) -> modes -> \[i](
+      <=0> $@MarkII.memory($position + $i) + 1 !
+      <=1> $position + $i !
+      <=2> $@MarkII.memory($position + $i) + $@MarkII.base + 1 !
     \) !
-  end params
+  end paramAddress
+  templates checkMem
+    $@MarkII.memory::length + 1..$ -> ..|@MarkII.memory: 0;
+    $ !
+  end checkMem
 
     templates proceed
       $ -> \(<[]> $... ! <> $ !\) -> ..|@MarkII.input: $;
@@ -41,15 +45,15 @@ processor MarkII
         { result: $@MarkII.memory(1) } !
 
       <?($ -> opcode <=1>)>
-        def params: $ -> params@{n: 2};
-        def result: $@MarkII.memory($ + 3) + 1;
-        @MarkII.memory($result): $params(1) + $params(2);
+        def paramAddress: $ -> paramAddress@{n: 3};
+        def result: $paramAddress(3) -> checkMem;
+        @MarkII.memory($result): $@MarkII.memory($paramAddress(1)) + $@MarkII.memory($paramAddress(2));
         $ + 4 -> #
 
       <?($ -> opcode <=2>)>
-        def params: $ -> params@{n: 2};
-        def result: $@MarkII.memory($ + 3) + 1;
-        @MarkII.memory($result): $params(1) * $params(2);
+        def paramAddress: $ -> paramAddress@{n: 3};
+        def result: $paramAddress(3) -> checkMem;
+        @MarkII.memory($result): $@MarkII.memory($paramAddress(1)) * $@MarkII.memory($paramAddress(2));
         $ + 4 -> #
 
       <?($ -> opcode <=3>)?($@MarkII.input <[](0)>)>
@@ -57,38 +61,44 @@ processor MarkII
         @MarkII.position: $;
 
       <?($ -> opcode <=3>)>
-        def result: $@MarkII.memory($ + 1) + 1;
+        def paramAddress: $ -> paramAddress@{n: 1};
+        def result: $paramAddress(1) -> checkMem;
         @MarkII.memory($result): ^@MarkII.input(1);
         $ + 2 -> #
 
       <?($ -> opcode <=4>)?($ + 2 -> opcode <=99>)>
         @MarkII.position: 0;
-        $ -> params@{n: 1} -> { result: $(1) } !
+        $ -> paramAddress@{n: 1} -> $@MarkII.memory($(1)) -> { result: $ } !
 
       <?($ -> opcode <=4>)>
-        { position: $, out: $ -> params@{n: 1}... } !
+        { position: $, out: $ -> paramAddress@{n: 1} -> $@MarkII.memory($(1)) } !
         $ + 2 -> #
 
       <?($ -> opcode <=5>)>
-        def params: $ -> params@{n: 2};
+        def params: $ -> paramAddress@{n: 2} -> [$... -> $@MarkII.memory($)];
         $ + 3 -> \(<?($params(1) <~=0>)> $params(2) + 1 ! <> $ ! \) -> #
 
       <?($ -> opcode <=6>)>
-        def params: $ -> params@{n: 2};
+        def params: $ -> paramAddress@{n: 2} -> [$... -> $@MarkII.memory($)];
         $ + 3 -> \(<?($params(1) <=0>)> $params(2) + 1 ! <> $ ! \) -> #
 
       <?($ -> opcode <=7>)>
-        def params: $ -> params@{n: 2};
-        def result: $@MarkII.memory($ + 3) + 1;
-        @MarkII.memory($result): $params(1) -> \(<..~$params(2)> 1 ! <> 0 !\);
+        def paramAddress: $ -> paramAddress@{n: 3};
+        def result: $paramAddress(3) -> checkMem;
+        @MarkII.memory($result): $@MarkII.memory($paramAddress(1)) -> \(<..~$@MarkII.memory($paramAddress(2))> 1 ! <> 0 !\);
         $ + 4 -> #
 
       <?($ -> opcode <=8>)>
-        def params: $ -> params@{n: 2};
-        def result: $@MarkII.memory($ + 3) + 1;
-        @MarkII.memory($result): $params(1) -> \(<=$params(2)> 1 ! <> 0 !\);
+        def paramAddress: $ -> paramAddress@{n: 3};
+        def result: $paramAddress(3) -> checkMem;
+        @MarkII.memory($result): $@MarkII.memory($paramAddress(1)) -> \(<=$@MarkII.memory($paramAddress(2))> 1 ! <> 0 !\);
         $ + 4 -> #
 
-      <> 'Error! $; $ -> params@{n: 1}; $@MarkII.memory($-10..$+1);' !
+      <?($ -> opcode <=9>)>
+        def paramAddress: $ -> paramAddress@{n: 1};
+        @MarkII.base: $@MarkII.base + $@MarkII.memory($paramAddress(1));
+        $ + 2 -> #
+
+      <> 'Error! $; $@MarkII.memory($-10..$+1);' !
     end proceed
 end MarkII
