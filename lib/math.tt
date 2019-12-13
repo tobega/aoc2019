@@ -14,3 +14,12 @@ templates manhattanDistance
   <0..> @: $@ + $;
   <..0> @: $@ - $;
 end manhattanDistance
+
+templates gcd
+  <{a: <=0>}> $.b -> abs !
+  <{b: <=0>}> $.a -> abs !
+  <{a: <..~0>}|{b: <..~0>}> { a: $.a -> abs, b: $.b -> abs } -> #
+  <{a:<=1>}|{b:<=1>}> 1 !
+  <{a:<..$.b>, b:<>}> { a: $.a, b: $.b mod $.a } -> #
+  <{a:<>, b:<>}> { a: $.b, b: $.a mod $.b } -> #
+end gcd

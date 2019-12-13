@@ -38,3 +38,11 @@ templates sort@{comparator:}
    <>
      $ !
 end sort
+
+templates flatten
+  [ $ -> # ] !
+  <[]>
+    $... -> #
+  <>
+    $ !
+end flatten
