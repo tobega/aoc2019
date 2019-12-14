@@ -6,14 +6,14 @@ composer parseIntcode
 end parseIntcode
 
 templates compute@{inputs:}
-  def machine: $ -> MarkII;
+  def machine: $ -> MarkII@{cooperativeThreading: 0};
   $inputs -> machine::proceed -> #
   <{ result: <> }> $.result !
   <{ out: <0> }> !VOID // ignore passing diagnostic test
   <> $ !
 end compute
 
-processor MarkII
+processor MarkII@{cooperativeThreading:}
   @: { memory: $, base: 0, position: 1, input:[] };
 
   templates opcode
@@ -72,7 +72,7 @@ processor MarkII
 
       <?($ -> opcode <=4>)>
         { position: $, out: $ -> paramAddress@{n: 1} -> $@MarkII.memory($(1)) } !
-        $ + 2 -> #
+        $ + 2 -> \(<?($cooperativeThreading <=0>)> $ ! <> @MarkII.position: $;\) -> #
 
       <?($ -> opcode <=5>)>
         def params: $ -> paramAddress@{n: 2} -> [$... -> $@MarkII.memory($)];

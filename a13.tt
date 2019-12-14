@@ -1,0 +1,32 @@
+import 'aoc'
+import 'lib/list'
+
+def game: $IN::lines -> aoc/parseIntcode;
+
+templates arcadeCabinet
+  def engine: $ -> aoc/MarkII@{cooperativeThreading: 1};
+  @: { screen: [], output: [], done: 0 };
+  [] -> engine::proceed -> #
+  '$@.screen... -> '$... -> \(<=0> ' '! <=1> '█'! <=2> '░'! <=3> '_'! <=4> '*'!\);$#10;';$#10;' -> !OUT::write
+  $@.screen !
+  <{result: <>}>
+    @.done: 1;
+    ..|@.output: $.result;
+    $@.output -> #
+  <{out: <>}>
+    ..|@.output: $.out;
+    $@.output -> #
+  <[](3..)>
+    def x: 1 + ^@.output(1);
+    def y: 1 + ^@.output(1);
+    $@.screen::length+1..$y -> ..|@.screen: [];
+    $@.screen($y)::length+1..$x -> ..|@.screen($y): 0;
+    @.screen($y;$x): ^@.output(1);
+    [] -> \(<?($@arcadeCabinet.done <=0>)> $ !\) -> engine::proceed -> #
+  <[]>
+    [] -> \(<?($@arcadeCabinet.done <=0>)> $ !\) -> engine::proceed -> #
+  <> 'Error $;' -> !OUT::write
+end arcadeCabinet
+
+// part 1
+$game -> arcadeCabinet -> list/flatten -> [ $... -> \(<=2> $ !\) ] -> $::length -> !OUT::write

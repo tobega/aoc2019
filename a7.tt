@@ -18,7 +18,7 @@ def valueSet: [ 0..4 ];
 ' -> !OUT::write
 
 templates feedbackMachines
-  @: [1..$::length -> $amplifierControllerSoftware -> aoc/MarkII ];
+  @: [1..$::length -> $amplifierControllerSoftware -> aoc/MarkII@{cooperativeThreading: 0} ];
   $ -> \[i]($ -> @feedbackMachines($i)::proceed ! \) -> \(<~[](0)> 'WTF! $;' ! \) -> !OUT::write
   { out: 0, to: 1 } -> #
 
