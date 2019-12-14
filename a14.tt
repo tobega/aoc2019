@@ -8,25 +8,60 @@ end parseReaction
 
 def reactionMap: [ $IN::lines -> parseReaction -> { key: $.result.name, value: $ } ] -> hash/Map;
 
-source calculateOreForFuel
-  def need: [{ key: 'FUEL', value: 1 }] -> hash/Map;
+templates convertToIngredients@{stock:, need:}
+      <~'ORE'>
+        def reaction: $ -> reactionMap::get;
+        def amountNeeded: $ -> need::remove;
+        def reactionsNeeded: ($amountNeeded + $reaction.result.amount - 1) ~/ $reaction.result.amount;
+        $reaction.ingredients... ->
+        \calculateNeed(def ingredient: $;
+          def available: [ $ingredient.name -> stock::remove ] -> \(<=[]> 0 ! <> $(1) !\);
+          $available - $ingredient.amount * $reactionsNeeded ->
+          \storeOrProcure( <0~..> { key: $ingredient.name, value: $ } -> stock::put -> !VOID
+            <..~0>
+              def deficit: -$;
+              { key: $ingredient.name, value: $deficit }
+              -> need::put // continues with old entry if one existed
+              -> { key: $.key, value: $.value + $deficit }
+              -> need::put -> !VOID
+          \storeOrProcure) -> !VOID
+        \calculateNeed) -> !VOID
+        { key: $, value: $reactionsNeeded * $reaction.result.amount - $amountNeeded } -> stock::put -> !VOID
+end convertToIngredients
+
+templates calculateOreForFuel@{stock:}
+  def need: [{ key: 'FUEL', value: $ }] -> hash/Map;
   [$need::entries -> $.key] -> #
 
   <=['ORE']> 'ORE' -> need::get !
 
-  <> $... -> \convertToIngredients(
-      <~'ORE'>
-        def reaction: $ -> reactionMap::get;
-        def amountNeeded: $ -> need::remove;
-        def reactionsNeeded: ($amountNeeded + $reaction.result.amount + 1) ~/ $reaction.result.amount;
-        $reaction.ingredients... -> \putNeed(def ingredient: $;
-          { key: $ingredient.name, value: $ingredient.amount * $reactionsNeeded }
-          -> need::put // continues with old entry if one existed
-          -> { key: $.key, value: $.value + $ingredient.amount * $reactionsNeeded }
-          -> need::put -> !VOID
-        \putNeed) -> !VOID
-    \convertToIngredients) -> !VOID
+  <> $... -> convertToIngredients@{stock: $stock, need: $need } -> !VOID
     [$need::entries -> $.key] -> #
 end calculateOreForFuel
 
-$calculateOreForFuel -> !OUT::write
+// part 1
+def oreForOneFuel: 1 -> calculateOreForFuel@{stock: [] -> hash/Map};
+'$oreForOneFuel;
+' -> !OUT::write
+
+// part 2
+source calculateFuelFromTrillion
+  def trillion: 1000000000000;
+  def stock: [] -> hash/Map;
+  @: 0;
+  $trillion -> #
+  $@ !
+
+  <$oreForOneFuel..>
+    def remaining: $;
+    def fuelToMake: $ ~/ $oreForOneFuel;
+    @: $@ + $fuelToMake;
+    $fuelToMake -> calculateOreForFuel@{stock: $stock} -> $remaining - $ -> #
+
+  <>
+    def remaining: $;
+    1 -> calculateOreForFuel@{stock: $stock} ->
+      \(<..$remaining> @calculateFuelFromTrillion: $@calculateFuelFromTrillion + 1; $remaining - $ ! \) -> #
+end calculateFuelFromTrillion
+
+$calculateFuelFromTrillion -> !OUT::write
