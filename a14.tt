@@ -1,0 +1,32 @@
+import 'lib/hash'
+
+composer parseReaction
+  { ingredients: [ <ingredient>+ ], (<' => '>) result: <chemical> }
+  rule chemical: { amount: <INT>, (<WS>) name: <~'[\s,]'> }
+  rule ingredient: <chemical> (<', '>?)
+end parseReaction
+
+def reactionMap: [ $IN::lines -> parseReaction -> { key: $.result.name, value: $ } ] -> hash/Map;
+
+source calculateOreForFuel
+  def need: [{ key: 'FUEL', value: 1 }] -> hash/Map;
+  [$need::entries -> $.key] -> #
+
+  <=['ORE']> 'ORE' -> need::get !
+
+  <> $... -> \convertToIngredients(
+      <~'ORE'>
+        def reaction: $ -> reactionMap::get;
+        def amountNeeded: $ -> need::remove;
+        def reactionsNeeded: ($amountNeeded + $reaction.result.amount + 1) ~/ $reaction.result.amount;
+        $reaction.ingredients... -> \putNeed(def ingredient: $;
+          { key: $ingredient.name, value: $ingredient.amount * $reactionsNeeded }
+          -> need::put // continues with old entry if one existed
+          -> { key: $.key, value: $.value + $ingredient.amount * $reactionsNeeded }
+          -> need::put -> !VOID
+        \putNeed) -> !VOID
+    \convertToIngredients) -> !VOID
+    [$need::entries -> $.key] -> #
+end calculateOreForFuel
+
+$calculateOreForFuel -> !OUT::write
