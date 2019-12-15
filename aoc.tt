@@ -59,6 +59,7 @@ processor MarkII@{cooperativeThreading:}
       <?($ -> opcode <=3>)?($@MarkII.input <[](0)>)>
         // Park it and wait for input
         @MarkII.position: $;
+        '>' -> \(<?($cooperativeThreading <=1>)> $ !\) -> $!
 
       <?($ -> opcode <=3>)>
         def paramAddress: $ -> paramAddress@{n: 1};

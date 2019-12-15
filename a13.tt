@@ -1,5 +1,6 @@
 import 'aoc'
 import 'lib/list'
+import 'lib/math'
 
 def game: $IN::lines -> aoc/parseIntcode;
 
@@ -30,3 +31,42 @@ end arcadeCabinet
 
 // part 1
 $game -> arcadeCabinet -> list/flatten -> [ $... -> \(<=2> $ !\) ] -> $::length -> !OUT::write
+'
+' -> !OUT::write
+
+templates botPlayer
+  @: { ballX: -1, paddleX: -1, score: -1, output: [], done: 0 };
+  def engine: [2, $(2..-1)...] -> aoc/MarkII@{cooperativeThreading: 1};
+  [] -> engine::proceed -> #
+  $@.score !
+  <='>'>
+    [ $@.ballX - $@.paddleX -> math/sign ] -> engine::proceed -> #
+  <{result: <>}>
+    @.done: 1;
+    ..|@.output: $.result;
+    $@.output -> #
+  <{out: <>}>
+    ..|@.output: $.out;
+    $@.output -> #
+  <[](3..)?($(1) <=-1>)?($(2) <=0>)>
+    @.score: $(3);
+    @.output: $@.output(4..-1);
+    [] -> \(<?($@botPlayer.done <=0>)> $ !\) -> engine::proceed -> #
+  <[](3..)?($(3) <=3>)>
+    @.paddleX: $(1);
+    @.output: $@.output(4..-1);
+    [] -> \(<?($@botPlayer.done <=0>)> $ !\) -> engine::proceed -> #
+  <[](3..)?($(3) <=4>)>
+    @.ballX: $(1);
+    @.output: $@.output(4..-1);
+    [] -> \(<?($@botPlayer.done <=0>)> $ !\) -> engine::proceed -> #
+  <[](3..)>
+    @.output: $@.output(4..-1);
+    [] -> \(<?($@botPlayer.done <=0>)> $ !\) -> engine::proceed -> #
+  <[]>
+    [] -> \(<?($@botPlayer.done <=0>)> $ !\) -> engine::proceed -> #
+  <> 'Error $;' -> !OUT::write
+end botPlayer
+
+// part 2
+$game -> botPlayer -> !OUT::write

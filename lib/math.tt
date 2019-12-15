@@ -5,6 +5,12 @@ templates abs
   <..0> -$ !
 end abs
 
+templates sign
+  <=0> 0 !
+  <0..> 1 !
+  <..0> -1 !
+end sign
+
 templates manhattanDistance
   @: 0;
   $ -> #
