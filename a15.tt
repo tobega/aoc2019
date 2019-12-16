@@ -1,0 +1,121 @@
+import 'aoc'
+import 'lib/hash'
+
+def botInterface: $IN::lines -> aoc/parseIntcode;
+
+def directions: [ { move: 1, dX: 0, dY: -1}, { move: 2, dX: 0, dY: 1}, { move: 3, dX: -1, dY: 0}, { move: 4, dX: 1, dY: 0}];
+
+// stereotype coordinates <{ x: <number>, y: <number> }>
+// stereotype corridorMap <{map: <[](1..;1..)>, offset: <coordinates>, bot: <coordinates>, oxygenSystem: <coordinates>}
+source botExplore
+  sink extendMapX
+    <=1>
+      @botExplore.map: $@botExplore.map -> \[i](['?', $...]!\);
+      @botExplore.offset.x: $@botExplore.offset.x + 1;
+    <=$@botExplore.map(1)::length>
+      1..$@botExplore.map::length -> ..|@botExplore.map($): '?';
+  end extendMapX
+  sink extendMapY
+    <=1>
+      @botExplore.map: [[1..$@botExplore.map(1)::length -> '?'], $@botExplore.map...];
+      @botExplore.offset.y: $@botExplore.offset.y + 1;
+    <=$@botExplore.map::length>
+      ..|@botExplore.map: [1..$@botExplore.map(1)::length -> '?'];
+  end extendMapY
+
+  templates findClosest
+    def target: $;
+    @:{ next:[], current:[{ position: $@botExplore.bot, path: [] }], found: [],
+      visited: $@botExplore.map -> \[i,j](0!\)
+    };
+    1 -> #
+    <?($@.found <[](1..)>)> $@.found !
+    <?($@.current <[](1..)>)>
+      def base: ^@.current(1);
+      $directions...
+        -> { position: { x: $base.position.x + $.dX, y: $base.position.y + $.dY},
+             path: [$base.path..., $.move]}
+        -> \inBounds(<?($.position.y + $@botExplore.offset.y <1..$@botExplore.map::length>)
+                      ?($.position.x + $@botExplore.offset.x <1..$@botExplore.map(1)::length>)> $ ! \inBounds)
+        -> \canMove(<?($@botExplore.map($.position.y + $@botExplore.offset.y; $.position.x + $@botExplore.offset.x)
+                <=$target>)> @findClosest.found: $.path;
+             <?($@botExplore.map($.position.y + $@botExplore.offset.y; $.position.x + $@botExplore.offset.x)
+                <~='#'>)
+              ?($@findClosest.visited($.position.y + $@botExplore.offset.y; $.position.x + $@botExplore.offset.x)
+                <=0>)> $ ! \canMove)
+        -> \store(..|@findClosest.next: $;
+             @findClosest.visited($.position.y + $@botExplore.offset.y; $.position.x + $@botExplore.offset.x): 1;\store)
+        -> !VOID
+      1 -> #
+    <?($@.next <[](1..)>)>
+      @.current: $@.next;
+      @.next: [];
+      1 -> #
+    <> 'Error no $target; found in $botExplore;' -> !OUT::write
+  end findClosest
+
+  source getNextMove
+    1 -> #
+    $@botExplore.currentPath(1) !
+    <?($@botExplore.currentPath <[](1..)>)> !VOID
+    <?($@botExplore.oxygenSystem <=$@botExplore.bot>)>
+      // find a potential shortest path back to bot start
+      @botExplore.currentPath: 'B' -> findClosest;
+      ..|@botExplore: (solution: $@botExplore.currentPath);
+//     '$@botExplore.map... -> '$...;$#10;';' -> !OUT::write
+//     '$@botExplore.currentPath;$#10;$#10;' -> !OUT::write
+    <?($@botExplore.oxygenSystem <{x:<>}>)>
+      // go back to oxygen system and find a new shortest path
+      @botExplore.currentPath: 'O' -> findClosest;
+    <>
+      // Just find the closest unexplored square
+      @botExplore.currentPath: '?' -> findClosest;
+  end getNextMove
+
+  @: { map: [['?', '?', '?'], ['?', 'B', '?'], ['?', '?', '?']],
+    offset: { x: 2, y: 2},
+    bot: { x: 0, y: 0},
+    oxygenSystem: {},
+    currentPath: []
+  };
+  def bot: $botInterface -> aoc/MarkII@{cooperativeThreading: 1};
+  [$getNextMove] -> bot::proceed -> $.out -> #
+  <=2>
+    def move: $directions(^@.currentPath(1));
+    def mapX: $@.bot.x + $@.offset.x + $move.dX;
+    def mapY: $@.bot.y + $@.offset.y + $move.dY;
+    @.map($mapY; $mapX): 'O';
+    @.bot.x: $@.bot.x + $move.dX;
+    @.bot.y: $@.bot.y + $move.dY;
+    @.oxygenSystem: $@.bot;
+    // Still extend for the next phase.
+    $mapX -> !extendMapX
+    $mapY -> !extendMapY
+    [$getNextMove] -> bot::proceed -> $.out -> #
+  <=0>
+    def move: $directions(^@.currentPath(1));
+    def mapX: $@.bot.x + $@.offset.x + $move.dX;
+    def mapY: $@.bot.y + $@.offset.y + $move.dY;
+    @.map($mapY; $mapX): '#';
+    $mapX -> !extendMapX
+    $mapY -> !extendMapY
+    @.currentPath: [];
+    [ $getNextMove ] -> bot::proceed -> $.out -> #
+  <=1>
+    def move: $directions(^@.currentPath(1));
+    def mapX: $@.bot.x + $@.offset.x + $move.dX;
+    def mapY: $@.bot.y + $@.offset.y + $move.dY;
+    // Mark as open if previously unknown
+    $@.map($mapY; $mapX) -> \(<='?'> $!\) -> @.map($mapY; $mapX): '.';
+    @.bot.x: $@.bot.x + $move.dX;
+    @.bot.y: $@.bot.y + $move.dY;
+    $mapX -> !extendMapX
+    $mapY -> !extendMapY
+    $@.bot -> \moveIfNotDone(<={x: 0, y: 0}?($@botExplore.solution <>)> 99 !
+      <> [ $getNextMove ] -> bot::proceed -> $.out ! \moveIfNotDone) -> #
+  <>
+    $@.solution !
+end botExplore
+
+// part 1
+$botExplore -> $::length -> !OUT::write
