@@ -1,0 +1,36 @@
+import 'lib/list'
+import 'lib/math'
+
+def baseFFT: [ 0, 1, 0, -1 ];
+
+composer toInt
+  <INT>
+end toInt
+
+composer parseTransmission
+  [ <digit>+ ]
+  rule digit: <'\d'> -> toInt
+end parseTransmission
+
+def message: $IN::lines -> parseTransmission;
+
+templates fft
+  templates phase
+    def input: $;
+    [ 1..$input::length -> \(
+      def digit: $;
+      def pattern: $baseFFT -> \[i](1..$digit -> $baseFFT($i) !\);
+      $input -> \[i]($ * $pattern($i mod $pattern::length + 1) !\) -> list/sum  -> math/abs -> $ mod 10 !
+    \) ] !
+  end phase
+
+  @: $message;
+  1..$ -> @: $@ -> phase;
+  $@ !
+end fft
+
+// part 1
+100 -> fft -> '$(1..8)...;' -> !OUT::write
+'
+' -> !OUT::write
+
