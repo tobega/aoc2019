@@ -5,9 +5,43 @@ def botInterface: $IN::lines -> aoc/parseIntcode;
 
 def directions: [ { move: 1, dX: 0, dY: -1}, { move: 2, dX: 0, dY: 1}, { move: 3, dX: -1, dY: 0}, { move: 4, dX: 1, dY: 0}];
 
+// Returns the shortest path to the target, or, when failed, the maximum number of steps possible
+  templates findClosest@{map:, offset:, from:}
+    def target: $;
+    @:{ next:[], current:[{ position: $from, path: [] }], found: [],
+      visited: $map -> \[i,j](0!\),
+      steps: 0
+    };
+    1 -> #
+    <?($@.found <[](1..)>)> $@.found !
+    <?($@.current <[](1..)>)>
+      def base: ^@.current(1);
+      $directions...
+        -> { position: { x: $base.position.x + $.dX, y: $base.position.y + $.dY},
+             path: [$base.path..., $.move]}
+        -> \inBounds(<?($.position.y + $offset.y <1..$map::length>)
+                      ?($.position.x + $offset.x <1..$map(1)::length>)> $ ! \inBounds)
+        -> \canMove(<?($map($.position.y + $offset.y; $.position.x + $offset.x)
+                <=$target>)> @findClosest.found: $.path;
+             <?($map($.position.y + $offset.y; $.position.x + $offset.x)
+                <~='#'>)
+              ?($@findClosest.visited($.position.y + $offset.y; $.position.x + $offset.x)
+                <=0>)> $ ! \canMove)
+        -> \store(..|@findClosest.next: $;
+             @findClosest.visited($.position.y + $offset.y; $.position.x + $offset.x): 1;\store)
+        -> !VOID
+      1 -> #
+    <?($@.next <[](1..)>)>
+      @.current: $@.next;
+      @.next: [];
+      @.steps: $@.steps + 1;
+      1 -> #
+    <> $@.steps !
+  end findClosest
+
 // stereotype coordinates <{ x: <number>, y: <number> }>
 // stereotype corridorMap <{map: <[](1..;1..)>, offset: <coordinates>, bot: <coordinates>, oxygenSystem: <coordinates>}
-source botExplore
+templates botExplore@{mode:}
   sink extendMapX
     <=1>
       @botExplore.map: $@botExplore.map -> \[i](['?', $...]!\);
@@ -23,64 +57,37 @@ source botExplore
       ..|@botExplore.map: [1..$@botExplore.map(1)::length -> '?'];
   end extendMapY
 
-  templates findClosest
-    def target: $;
-    @:{ next:[], current:[{ position: $@botExplore.bot, path: [] }], found: [],
-      visited: $@botExplore.map -> \[i,j](0!\)
-    };
-    1 -> #
-    <?($@.found <[](1..)>)> $@.found !
-    <?($@.current <[](1..)>)>
-      def base: ^@.current(1);
-      $directions...
-        -> { position: { x: $base.position.x + $.dX, y: $base.position.y + $.dY},
-             path: [$base.path..., $.move]}
-        -> \inBounds(<?($.position.y + $@botExplore.offset.y <1..$@botExplore.map::length>)
-                      ?($.position.x + $@botExplore.offset.x <1..$@botExplore.map(1)::length>)> $ ! \inBounds)
-        -> \canMove(<?($@botExplore.map($.position.y + $@botExplore.offset.y; $.position.x + $@botExplore.offset.x)
-                <=$target>)> @findClosest.found: $.path;
-             <?($@botExplore.map($.position.y + $@botExplore.offset.y; $.position.x + $@botExplore.offset.x)
-                <~='#'>)
-              ?($@findClosest.visited($.position.y + $@botExplore.offset.y; $.position.x + $@botExplore.offset.x)
-                <=0>)> $ ! \canMove)
-        -> \store(..|@findClosest.next: $;
-             @findClosest.visited($.position.y + $@botExplore.offset.y; $.position.x + $@botExplore.offset.x): 1;\store)
-        -> !VOID
-      1 -> #
-    <?($@.next <[](1..)>)>
-      @.current: $@.next;
-      @.next: [];
-      1 -> #
-    <> 'Error no $target; found in $botExplore;' -> !OUT::write
-  end findClosest
-
+// Will follow currentPath if it exists, else find a new target.
+// Returns nothing if a target cannot be found, which causes the bot to return a prompt '>'
+// which then exits botExplore
   source getNextMove
     1 -> #
-    $@botExplore.currentPath(1) !
+    $@botExplore.currentPath -> \(<[]> $(1)! \) !
     <?($@botExplore.currentPath <[](1..)>)> !VOID
-    <?($@botExplore.oxygenSystem <=$@botExplore.bot>)>
+    <?($@botExplore.oxygenSystem <=$@botExplore.bot>) ?($mode <='find'>)>
       // find a potential shortest path back to bot start
-      @botExplore.currentPath: 'B' -> findClosest;
+      @botExplore.currentPath: 'B' -> findClosest@{map: $@botExplore.map, offset: $@botExplore.offset, from: $@botExplore.bot};
       ..|@botExplore: (solution: $@botExplore.currentPath);
 //     '$@botExplore.map... -> '$...;$#10;';' -> !OUT::write
 //     '$@botExplore.currentPath;$#10;$#10;' -> !OUT::write
-    <?($@botExplore.oxygenSystem <{x:<>}>)>
+    <?($@botExplore.oxygenSystem <{x:<>}>) ?($mode <='find'>)>
       // go back to oxygen system and find a new shortest path
-      @botExplore.currentPath: 'O' -> findClosest;
+      @botExplore.currentPath: 'O' -> findClosest@{map: $@botExplore.map, offset: $@botExplore.offset, from: $@botExplore.bot};
     <>
       // Just find the closest unexplored square
-      @botExplore.currentPath: '?' -> findClosest;
+      @botExplore.currentPath: '?' -> findClosest@{map: $@botExplore.map, offset: $@botExplore.offset, from: $@botExplore.bot};
   end getNextMove
 
   @: { map: [['?', '?', '?'], ['?', 'B', '?'], ['?', '?', '?']],
     offset: { x: 2, y: 2},
-    bot: { x: 0, y: 0},
     oxygenSystem: {},
+    $..., // overwrites previous if given
+    bot: { x: 0, y: 0},
     currentPath: []
   };
   def bot: $botInterface -> aoc/MarkII@{cooperativeThreading: 1};
-  [$getNextMove] -> bot::proceed -> $.out -> #
-  <=2>
+  [$getNextMove] -> bot::proceed -> #
+  <{out: <=2>} ?($mode <'find'>)>
     def move: $directions(^@.currentPath(1));
     def mapX: $@.bot.x + $@.offset.x + $move.dX;
     def mapY: $@.bot.y + $@.offset.y + $move.dY;
@@ -91,8 +98,8 @@ source botExplore
     // Still extend for the next phase.
     $mapX -> !extendMapX
     $mapY -> !extendMapY
-    [$getNextMove] -> bot::proceed -> $.out -> #
-  <=0>
+    [$getNextMove] -> bot::proceed -> #
+  <{out: <=0>}>
     def move: $directions(^@.currentPath(1));
     def mapX: $@.bot.x + $@.offset.x + $move.dX;
     def mapY: $@.bot.y + $@.offset.y + $move.dY;
@@ -100,8 +107,8 @@ source botExplore
     $mapX -> !extendMapX
     $mapY -> !extendMapY
     @.currentPath: [];
-    [ $getNextMove ] -> bot::proceed -> $.out -> #
-  <=1>
+    [ $getNextMove ] -> bot::proceed -> #
+  <{out: <=1|=2>}>
     def move: $directions(^@.currentPath(1));
     def mapX: $@.bot.x + $@.offset.x + $move.dX;
     def mapY: $@.bot.y + $@.offset.y + $move.dY;
@@ -112,10 +119,16 @@ source botExplore
     $mapX -> !extendMapX
     $mapY -> !extendMapY
     $@.bot -> \moveIfNotDone(<={x: 0, y: 0}?($@botExplore.solution <>)> 99 !
-      <> [ $getNextMove ] -> bot::proceed -> $.out ! \moveIfNotDone) -> #
+      <> [ $getNextMove ] -> bot::proceed ! \moveIfNotDone) -> #
   <>
-    $@.solution !
+    $@ !
 end botExplore
 
 // part 1
-$botExplore -> $::length -> !OUT::write
+def mapFoundOxygen: {} -> botExplore@{mode: 'find'};
+$mapFoundOxygen -> $.solution::length -> !OUT::write
+'
+' -> !OUT::write
+// part 2
+def fullMap: $mapFoundOxygen -> botExplore@{mode: 'fill'};
+'Z' -> findClosest@{map: $fullMap.map, offset: $fullMap.offset, from: $fullMap.oxygenSystem} -> !OUT::write
