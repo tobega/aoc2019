@@ -6,19 +6,21 @@ def asciiProgram: $IN::lines -> aoc/parseIntcode;
 templates collectAsciiRows
   @: [[]];
   $... -> #
-  $@ -> \(<?($(-1) <[](0)>)> $(1..-2) ! <> $ !\) !
+  $@ -> \(<?($(-1) <[](0)>)> $(1..-2) -> # <> $(-1)::length -> !OUT::write $ !\) !
   <10> ..|@: [];
+  <..27> $ -> 'Got ascii $;$#10;' -> !OUT::write
   <> ..|@(-1): '$#$;';
 end collectAsciiRows
 
 //part 1
 def view: $asciiProgram -> aoc/run -> collectAsciiRows;
 '
-$view;
+$view... -> '$;
+';
 ' -> !OUT::write
 
 $view -> \[row,col](
-  [$row, $col] -> !OUT::write
+  $ -> \(<~='.'> $!\) ->
   // using a little trick where getting a range of one element just gives an empty list if it doesn't exist
   [ $view($row-1..$row-1;$col)..., $view($row+1..$row+1;$col)...,
     $view($row;$col-1..$col-1)..., $view($row;$col+1..$col+1)... ]
