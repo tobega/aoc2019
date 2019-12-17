@@ -8,10 +8,15 @@ end parseIntcode
 templates compute@{inputs:}
   def machine: $ -> MarkII@{cooperativeThreading: 0};
   $inputs -> machine::proceed -> #
-  <{ result: <> }> $.result !
+  <{ status: <='end'> }> $.out !
   <{ out: <0> }> !VOID // ignore passing diagnostic test
   <> $ !
 end compute
+
+templates run
+  def machine: $ -> MarkII@{cooperativeThreading: 0};
+  [[] -> machine::proceed -> $.out ] !
+end run
 
 processor MarkII@{cooperativeThreading:}
   @: { memory: $, base: 0, position: 1, input:[] };
@@ -42,7 +47,7 @@ processor MarkII@{cooperativeThreading:}
 
       <?($ -> opcode <=99>)>
         @MarkII.position: 0;
-        { result: $@MarkII.memory(1) } !
+        { out: $@MarkII.memory(1), status: 'end' } !
 
       <?($ -> opcode <=1>)>
         def paramAddress: $ -> paramAddress@{n: 3};
@@ -69,7 +74,7 @@ processor MarkII@{cooperativeThreading:}
 
       <?($ -> opcode <=4>)?($ + 2 -> opcode <=99>)>
         @MarkII.position: 0;
-        $ -> paramAddress@{n: 1} -> $@MarkII.memory($(1)) -> { result: $ } !
+        $ -> paramAddress@{n: 1} -> $@MarkII.memory($(1)) -> { out: $, status: 'end' } !
 
       <?($ -> opcode <=4>)>
         { position: $, out: $ -> paramAddress@{n: 1} -> $@MarkII.memory($(1)) } !

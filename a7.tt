@@ -22,11 +22,11 @@ templates feedbackMachines
   $ -> \[i]($ -> @feedbackMachines($i)::proceed ! \) -> \(<~[](0)> 'WTF! $;' ! \) -> !OUT::write
   { out: 0, to: 1 } -> #
 
-  <{result: <>, to: <=1>}> $.result !
+  <{status: <='end'>, to: <=1>}> $.out !
 
-  <{out: <>, to: <>}|{result:<>}>
+  <{out: <>, to: <>}>
     def stage: $;
-    $stage -> \(<{out:<>}> $.out ! <> $.result !\) -> @($stage.to)::proceed -> { $..., to: $stage.to mod $@::length + 1 } -> #
+    $stage -> $.out -> @($stage.to)::proceed -> { $..., to: $stage.to mod $@::length + 1 } -> #
 
   <>
     'Error $;' -> !OUT::write

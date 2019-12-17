@@ -10,9 +10,9 @@ templates arcadeCabinet
   [] -> engine::proceed -> #
   '$@.screen... -> '$... -> \(<=0> ' '! <=1> '█'! <=2> '░'! <=3> '_'! <=4> '*'!\);$#10;';$#10;' -> !OUT::write
   $@.screen !
-  <{result: <>}>
+  <{status: <='end'>}>
     @.done: 1;
-    ..|@.output: $.result;
+    ..|@.output: $.out;
     $@.output -> #
   <{out: <>}>
     ..|@.output: $.out;
@@ -41,9 +41,9 @@ templates botPlayer
   $@.score !
   <='>'>
     [ $@.ballX - $@.paddleX -> math/sign ] -> engine::proceed -> #
-  <{result: <>}>
+  <{status: <='end'>}>
     @.done: 1;
-    ..|@.output: $.result;
+    ..|@.output: $.out;
     $@.output -> #
   <{out: <>}>
     ..|@.output: $.out;
