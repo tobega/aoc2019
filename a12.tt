@@ -1,0 +1,51 @@
+import 'lib/hash'
+import 'lib/list'
+import 'lib/math'
+
+composer parsePosition
+  { (<'<x='>) x: <INT>, (<', y='>) y: <INT>, (<', z='>) z: <INT> (<'>'>) }
+end parsePosition
+
+def moonsAtStart: [$IN::lines -> parsePosition -> { position: $, velocity: {dx: 0, dy: 0, dz: 0} }];
+
+templates absSum
+  @: 0;
+  $... -> $::value -> math/abs -> @: $@ + $;
+  $@ !
+end absSum
+
+templates moonTime@{increase:}
+  @: $;
+  1..$increase -> \step(
+    @moonTime: $@moonTime -> \updateVelocity[i](
+      @: $;
+      $@moonTime... -> { ddx: [$.position.x, $@.position.x] -> list/naturalOrder,
+        ddy: [$.position.y, $@.position.y] -> list/naturalOrder,
+        ddz: [$.position.z, $@.position.z] -> list/naturalOrder }
+      -> @.velocity: { dx: $@.velocity.dx + $.ddx,
+        dy: $@.velocity.dy + $.ddy,
+        dz: $@.velocity.dz + $.ddz};
+      $@ !
+    \updateVelocity);
+    @moonTime: $@moonTime -> \updatePosition[i](
+      { position: { x: $.position.x + $.velocity.dx,
+          y: $.position.y + $.velocity.dy,
+          z: $.position.z + $.velocity.dz },
+        velocity: $.velocity } !
+    \updatePosition);
+  \step) -> !VOID
+  $@ !
+end moonTime
+
+// part 1
+def moonsAt1000: $moonsAtStart -> moonTime@{increase: 1000};
+[ $moonsAt1000... -> [ $.position -> absSum, $.velocity -> absSum ] -> $(1) * $(2) ] -> list/sum -> !OUT::write
+
+// explore part 2
+templates findReps
+  @: { moons: $moonsAtStart, time: 0};
+  def seen: [] -> hash/Set;
+  0 -> #
+  <> @.time: $@.time + $;
+    @.moons:  $@.moons -> moonTime@{increase: $};
+end findReps
