@@ -1,0 +1,5 @@
+def map: [ $IN::lines -> [ $... ]];
+
+def start: $map -> \[i,j](<='@'> { row: $i, col: $j } !\) ... ...;
+
+def allKeys: [ $map -> \[i,j](<'\p{Lower}'> { key: $, row: $i, col: $j } !\) ... ...;
