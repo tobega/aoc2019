@@ -1,0 +1,75 @@
+import 'aoc'
+import 'lib/list'
+
+def droneSystem: $IN::lines -> aoc/parseIntcode;
+
+templates check
+    def droneControl: $droneSystem -> aoc/MarkII@{cooperativeThreading: 1};
+    $ -> droneControl::proceed -> $.out !
+end check
+
+def beam: [ 0..49 -> \( def y: $;
+  [ 0..49 -> \( def x: $;
+    [ $x, $y ] -> check !
+  \)] !
+\) ];
+
+'$beam... -> '$...;
+';
+' -> !OUT::write
+
+// part 1
+$beam -> list/flatten -> list/sum -> !OUT::write
+'
+' -> !OUT::write
+
+templates checkBaseline
+  @:{bottom: $};
+  def y: $;
+  $..$~/2:-1 -> \( def x: $;
+                 [ $x, $y ] -> check -> { beam: $, x: $x} !
+               \) -> #
+  $@ !
+  <{beam: <=1>}> ..|@: (left: $.x);
+end checkBaseline
+
+// <number>-><{bottom:, left:}+{top:}?+{right:}?}
+templates checkSanta
+  @: $ -> checkBaseline;
+  [$@.left, $@.bottom-99] -> check -> \(<=1> ..|@checkSanta: {top:$@checkSanta.bottom-99}; $!\)
+  -> [$@.left+99, $@.top] -> check -> \(<=1> ..|@checkSanta: {right:$@checkSanta.left+99}; $!\)
+  -> [$@.right+1, $@.top] -> check -> \(<=1> ..|@checkSanta: {over:1};\) -> !VOID
+  '$@;$#10;' -> !OUT::write
+  $@ !
+end checkSanta
+
+templates fineTune
+  $ -> #
+  $@ !
+  <{right:<>}>
+    @: $;
+    $.bottom-1 -> checkSanta -> #
+end fineTune
+
+source findGoodSantaLocation
+  templates nextGuess
+    <{max:<=$.min+1>}> !VOID // no more guesses
+    <{max:<>}>
+      ($.min + $.max) ~/ 2 !
+    <>
+      $.min * 2 !
+  end nextGuess
+  @: {min: 1000};
+  500 -> checkSanta -> #
+  <{over:<>}> // too big
+    ..|@:{max:$.bottom};
+    $@ -> nextGuess -> checkSanta -> #
+  <{right:<>}>
+    $ -> fineTune !
+  <> // too small
+    @.min: $.bottom;
+    $@ -> nextGuess -> checkSanta -> #
+end findGoodSantaLocation
+
+// part 2
+$findGoodSantaLocation -> $.left*10000 + $.top -> !OUT::write
