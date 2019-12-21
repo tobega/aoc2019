@@ -1,0 +1,42 @@
+import 'aoc'
+
+def springdroid: $IN::lines -> aoc/parseIntcode;
+
+// part 1
+def control:
+'OR A T
+AND B T
+AND C T
+NOT T J
+AND D J
+WALK
+';
+
+def bot: $springdroid -> aoc/MarkII@{cooperativeThreading: 0};
+[[] -> bot::proceed -> $.out ] -> '$... -> '$#$;';' -> !OUT::write
+$control -> !OUT::write
+
+[ $control::asCodePoints -> bot::proceed -> $.out ] ->
+'$... -> \(<..127> '$#$;'! <> $! \);
+'-> !OUT::write
+
+// part 2
+def control2:
+'OR A T
+AND B T
+AND C T
+NOT T J
+OR E T
+OR H T
+AND T J
+AND D J
+RUN
+';
+
+def bot2: $springdroid -> aoc/MarkII@{cooperativeThreading: 0};
+[[] -> bot2::proceed -> $.out ] -> '$... -> '$#$;';' -> !OUT::write
+$control2 -> !OUT::write
+
+[ $control2::asCodePoints -> bot2::proceed -> $.out ] ->
+'$... -> \(<..127> '$#$;'! <> $! \);
+'-> !OUT::write
