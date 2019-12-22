@@ -1,5 +1,6 @@
 import 'lib/list'
 import 'lib/hash'
+import 'lib/math'
 
 [1, 5, 3, 9, 2] -> list/max -> (<9> 'Pass' ! <> 'Fail: max is $; should be 9' !) -> !OUT::write
 
@@ -67,3 +68,11 @@ def map: [{key: 'a', value: 1}, {key: 'b', value: 2}] -> hash/Map;
   -> !OUT::write
 
 ['b' -> map::get] -> (<[](0)> 'Pass' ! <> 'Fail: b should not be mapped' !) -> !OUT::write
+
+{a: 11, b: 26} -> math/extendedGcd -> $.x * 11 + $.y * 26 -> \(<=1> 'Pass'! <> 'Fail: $; should be 1' !\) -> !OUT::write
+
+{a: 5, b: 11} -> math/extendedGcd -> $.x mod 11 -> \(<=9> 'Pass'! <> 'Fail: $; should be 9' !\) -> !OUT::write
+
+[5, 10] -> math/powerMod@{mod: 11} -> \(<=1> 'Pass'! <> 'Fail: $; should be 1' !\) -> !OUT::write
+
+[5, 6] -> math/powerMod@{mod: 11} -> \(<=5> 'Pass'! <> 'Fail: $; should be 5' !\) -> !OUT::write

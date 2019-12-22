@@ -29,3 +29,19 @@ templates gcd
   <{a:<..$.b>, b:<>}> { a: $.a, b: $.b mod $.a } -> #
   <{a:<>, b:<>}> { a: $.b, b: $.a mod $.b } -> #
 end gcd
+
+templates extendedGcd
+  <{a: <=0>}> { x: 0, y: 1, gcd: $.b } !
+  <> def q: $.b ~/ $.a;
+    { a: $.b - $q * $.a, b: $.a } -> extendedGcd -> { x: $.y - $q * $.x, y: $.x, gcd: $.gcd } !
+end extendedGcd
+
+templates powerMod@{mod:}
+  @: { result: 1, b: $(1) };
+  $(2) mod ($mod - 1) -> #
+  <=0> $@.result !
+  <>
+    $ -> \(<?($ mod 2 <=1>)> @powerMod.result: $@powerMod.result * $@powerMod.b mod $mod;\) -> !VOID
+    @.b: $@.b * $@.b mod $mod;
+    $ ~/ 2 -> #
+end powerMod
