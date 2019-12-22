@@ -1,0 +1,48 @@
+composer parseInstruction
+  { type: <~INT> -> \(<'.*new.*'> 'new' ! <'.*cut.*'> 'cut' ! <'.*increment.*'> 'increment' ! <> 'OOPS $;' -> !OUT::write\),
+    <count>? }
+  rule count: count: <INT>
+end parseInstruction
+
+def shuffle: [ $IN::lines -> parseInstruction ];
+
+source doShuffle
+  @: [ 0..10006 ];
+  $shuffle... -> #
+  $@ !
+  <{type: <='new'>}>
+    @: $@(-1..1:-1);
+  <{type: <='cut'>, count: <..0>}>
+    @: $@([$.count..-1, 1..~$.count]);
+  <{type: <='cut'>, count: <0..>}>
+    @: $@([$.count~..-1, 1..$.count]);
+  <{type: <='increment'>}>
+    templates spread
+      def increment: $;
+      @: [ 0..10006 -> -1 ];
+      $@doShuffle -> \[i]( @spread(($i-1)*$increment mod 10007 + 1): $; \) -> !VOID
+      $@!
+    end spread
+    @: $.count -> spread;
+end doShuffle
+
+// part 1
+$doShuffle -> \[i](<2019> $i - 1 !\) -> !OUT::write
+'
+' -> !OUT::write
+
+templates shuffleFormula
+  def size: $;
+  @: [ 1, 0 ];
+  $shuffle... -> #
+  $@ !
+  <{type: <='new'>}>
+    @: [ -$@(1), $size - 1 - $@(2)];
+  <{type: <='cut'>}>
+    @(2): ($@(2) - $.count) mod $size;
+  <{type: <='increment'>}>
+    @: [$@(1) * $.count mod $size, $@(2) * $.count mod $size];
+end shuffleFormula
+
+10007 -> shuffleFormula -> (2019 * $(1) + $(2)) mod 10007 -> '$;
+' -> !OUT::write
