@@ -43,7 +43,7 @@ templates shuffleFormula@{shuffle:}
   <{type: <='cut'>}>
     @(2): ($@(2) - $.count) mod $size;
   <{type: <='increment'>}>
-    @: [$@(1) * $.count mod $size, $@(2) * $.count mod $size];
+    @: [[$@(1), $.count] -> math/mulMod@{mod:$size}, [$@(2), $.count] -> math/mulMod@{mod:$size}];
 end shuffleFormula
 
 def result1: 10007 -> shuffleFormula@{shuffle: $shuffle} -> (2019 * $(1) + $(2)) mod 10007;
@@ -61,7 +61,7 @@ templates geometricSum@{n:, mod:}
   def a: $(2);
   def rn: [$r, $n] -> math/powerMod@{mod: $mod};
   def d: (1 - $r) mod $mod -> multiplicativeInverse@{mod: $mod};
-  $a * (1 - $rn) mod $mod * $d mod $mod !
+  [[$a, (1 - $rn)] -> math/mulMod@{mod:$mod}, $d] -> math/mulMod@{mod:$mod} !
 end geometricSum
 
 // test
@@ -70,7 +70,7 @@ end geometricSum
 
 templates invertFormula@{mod:}
   def mi: $(1) -> multiplicativeInverse@{mod: $mod};
-  [ $mi , -$(2) * $mi mod $mod ] !
+  [ $mi , [-$(2), $mi] -> math/mulMod@{mod:$mod} ] !
 end invertFormula
 
 def formula1: 10007 -> shuffleFormula@{shuffle: $shuffle};
@@ -111,5 +111,6 @@ def bigShuffle: $bigDeckSize -> shuffleFormula@{shuffle: $shuffle};
 def repeatedBigShuffle: [ [$bigShuffle(1), $times] -> math/powerMod@{mod: $bigDeckSize},
   $bigShuffle -> geometricSum@{n: $times, mod: $bigDeckSize}];
 
-$repeatedBigShuffle -> invertFormula@{mod: $bigDeckSize} -> (2020 * $(1) mod $bigDeckSize + $(2)) mod $bigDeckSize
+$repeatedBigShuffle -> invertFormula@{mod: $bigDeckSize}
+-> \(def formula: $; [2020, $formula(1)]  -> math/mulMod@{mod:$bigDeckSize} -> ($ + $formula(2)) mod $bigDeckSize !\)
 -> !OUT::write

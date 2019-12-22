@@ -36,12 +36,22 @@ templates extendedGcd
     { a: $.b - $q * $.a, b: $.a } -> extendedGcd -> { x: $.y - $q * $.x, y: $.x, gcd: $.gcd } !
 end extendedGcd
 
+templates mulMod@{mod:}
+  @: { result: 0, b: $(1) mod $mod };
+  $(2) mod $mod -> #
+  <=0> $@.result !
+  <>
+    $ -> \(<?($ mod 2 <=1>)> @mulMod.result: ($@mulMod.result + $@mulMod.b) mod $mod;\) -> !VOID
+    @.b: $@.b * 2 mod $mod;
+    $ ~/ 2 -> #
+end mulMod
+
 templates powerMod@{mod:}
   @: { result: 1, b: $(1) };
   $(2) mod ($mod - 1) -> #
   <=0> $@.result !
   <>
-    $ -> \(<?($ mod 2 <=1>)> @powerMod.result: $@powerMod.result * $@powerMod.b mod $mod;\) -> !VOID
-    @.b: $@.b * $@.b mod $mod;
+    $ -> \(<?($ mod 2 <=1>)> @powerMod.result: [$@powerMod.result, $@powerMod.b] -> mulMod@{mod:$mod};\) -> !VOID
+    @.b: [$@.b, $@.b] -> mulMod@{mod:$mod};
     $ ~/ 2 -> #
 end powerMod
