@@ -1,7 +1,125 @@
+import 'lib/hash'
+import 'lib/list'
+
 def map: [ $IN::lines -> [ $... ]];
 
 def start: $map -> \[i,j](<='@'> { row: $i, col: $j } !\) ... ...;
 
-def keyPositions: [ $map -> \[i,j](<'\p{Lower}'> { key: $, row: $i, col: $j } !\) ... ...;
+def keyPositions: [ $map -> \[i,j](<'\p{Lower}'> { key: $, row: $i, col: $j } !\) ... ...];
 
 def keys: [ $keyPositions... ->  $.key ];
+
+def doors: [ $map -> \[i,j](<'\p{Upper}'> $ !\) ... ...];
+
+templates calculateDistances
+  def directions: [ { dRow: 0, dCol: -1}, { dRow: 0, dCol: 1}, { dRow: -1, dCol: 0}, { dRow: 1, dCol: 0}];
+  @: { map: $map, next: [], current: [{at: $start, distance: 0, doors: []}], found: [] -> hash/Map};
+  1 -> #
+  $@.found !
+
+  <?($@.current <[](1..)>)>
+    def base: ^@.current(1);
+    $directions...
+      -> { at: { row: $base.at.row + $.dRow, col: $base.at.col + $.dCol},
+           distance: $base.distance + 1, doors: $base.doors}
+      -> \checkMap(def onMap: $@calculateDistances.map($.at.row; $.at.col);
+         $ -> #
+         <?($onMap <='#'>)> !VOID
+         <?($doors <[<$onMap>]>)> { $..., doors: [$.doors..., $onMap] } !
+         <?($keys <[<$onMap>]>)>
+           // accounting for different paths through different doors
+           { key: { key: $onMap, doors: $.doors}, value: $.distance}
+           // re-putting the first (shortest) path, if one exists
+           -> @calculateDistances.found::put -> @calculateDistances.found::put -> !VOID
+         <> $!
+      \checkMap)
+      -> \( @calculateDistances.map($.at.row; $.at.col): '#';
+            ..|@calculateDistances.next: $; \) -> !VOID
+    1 -> #
+  <?($@.next <[](1..)>)>
+    @.current: $@.next;
+    @.next: [];
+    1 -> #
+end calculateDistances
+
+processor DistanceTable
+  @: [] -> hash/Map;
+
+  sink add@{from:}
+    def entry: { key: { from: $from, to : $.key.key}, value: [{ doors: $.key.doors, distance: $.value}]};
+    $entry -> @::put -> { key: $entry.key, value: [$.value..., $entry.value...]} -> @::put -> !VOID
+  end add
+
+  templates pathLength
+    def path: $;
+    @: {at: '@', length: 0};
+    1..$path::length -> #
+    $@.length !
+
+    <> def i: $;
+      def stage: {from: $@.at, to: $path($i)} -> @DistanceTable::get;
+      @.length: $@.length + $stage.distance;
+      $stage.doors... -> \(<?($path(1..$i) <~[<'(?i)$;'>]>)>
+        @pathLength.distance: $@pathLength.distance + 100; \) -> !VOID
+      @.at: $path($i);
+  end pathLength
+end DistanceTable
+
+def distanceTable: $DistanceTable;
+
+$start -> calculateDistances -> $::entries -> !distanceTable::add@{from: '@'}
+$keyPositions... -> \( def from: $.key;
+  $ -> calculateDistances -> $::entries -> !distanceTable::add@{from: $from}
+\) -> !VOID
+
+templates geneSoup@{popSize:, genes:}
+  source generateHalfChromosome
+    @: $genes;
+    [ 1..$genes::length -> ^@($@::length -> SYS::randomInt -> $+1) ] !
+  end generateHalfChromosome
+
+  source createCell
+    { chromosome: $, value: [ $... -> distanceTable::pathLength ] -> list/min} !
+  end createCell
+
+  templates getGamete
+    def crossover: $genes::length + 1 -> SYS::randomInt;
+    @: $.chromosome(1; 1..$crossover);
+    $.chromosome(2)... -> \(<?($@getGamete <~[<$>]>)> ..|@getGamete: $;\) -> !VOID
+    $@ !
+  end getGamete
+
+  templates mate
+    [ $ -> getGamete,
+      $@geneSoup.pop($popSize -> SYS::randomInt -> $+1) -> getGamete ]
+    -> createCell !
+  end mate
+
+  sink updateBest
+    <..~@geneSoup.best> @geneSoup.best: $;
+  end updateBest
+
+  source isStagnated
+    @: 0;
+    [1..3 -> $@geneSoup.pop($popSize -> SYS::randomInt -> $+1) ] -> #
+    $@!
+    
+    // check if all equal, actually it is not an array containing anything different from the first element
+    <~[<~$(1)>]> @: 1;
+  end isStagnated
+
+  templates mutate
+    @: $;
+    100 -> $SYS::randomInt -> \(<=0> $!\)
+
+  @: {best: 99999999999;
+    pop: [ 1..$popSize -> [ $generateHalfChromosome, $generateHalfChromosome ] -> createCell ]};
+  0 -> #
+
+  <=1> $@.best !
+  <>
+    def babies: [ $@.pop... -> mate ];
+    $babies... -> $.value -> !updateBest
+    @.pop: [$babies... -> mutate]; // let's try to just replace elders
+    $isStagnated -> #
+end geneSoup
