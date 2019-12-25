@@ -106,7 +106,7 @@ source geneSoup@{popSize:, genes:}
 
     <?($@.adults <[](2..)>)>
       [ 1..2 ->
-        $@.adults::length -> SYS::randomInt -> ^@.adults($+1) -> getGamete ]
+        \($@mate.adults::length -> SYS::randomInt -> ^@mate.adults($+1) -> getGamete ! \)]
       -> createCell -> ..|@.babies: $;
       1 -> #
   end mate
@@ -117,7 +117,7 @@ source geneSoup@{popSize:, genes:}
 
   source isStagnated
     @: 0;
-    [1..3 -> $popSize -> SYS::randomInt -> $@geneSoup.pop($+1) ] -> #
+    [1..3 -> $@geneSoup.pop::length -> SYS::randomInt -> $@geneSoup.pop($+1) ] -> #
     $@!
     
     // check if all equal, actually it is not an array containing anything different from the first element
@@ -126,27 +126,25 @@ source geneSoup@{popSize:, genes:}
   end isStagnated
 
   templates ageAndMutate
-$ -> '$#10;age $;$#10;' -> !OUT::write
     @: $;
     @.age: $@.age+1;
-    8 -> $SYS::randomInt -> #
+    8 -> SYS::randomInt -> #
 
     <..$@.age> !VOID // died
     <>
-      100 -> $SYS::randomInt -> \(<=0> $!\)
-      -> { rotate: $@::length -> $SYS::randomInt -> $+1, which: 2 -> $SYS::randomInt -> $+1}
-      -> @.chromosome($.which): $@.cromosome($.which; [$rotate..-1, 1..$rotate-1]);
-      100 -> $SYS::randomInt -> \(<=0> $!\)
-      -> { displace: $@::length -> $SYS::randomInt -> $+1, which: 2 -> $SYS::randomInt -> $+1}
-      -> @.chromosome($.which): $@.cromosome($.which; [$displace, 1..$displace-1, $displace+1..-1]);
+      100 -> SYS::randomInt -> \(<=0> $!\)
+      -> { rotate: $genes::length -> SYS::randomInt -> $+1, which: 2 -> SYS::randomInt -> $+1}
+      -> @.chromosome($.which): $@.chromosome($.which; [$.rotate..-1, 1..$.rotate-1]);
+      100 -> SYS::randomInt -> \(<=0> $!\)
+      -> { displace: $genes::length -> SYS::randomInt -> $+1, which: 2 -> SYS::randomInt -> $+1}
+      -> @.chromosome($.which): $@.chromosome($.which; [$.displace, 1..$.displace-1, $.displace+1..-1]);
       $@!
   end ageAndMutate
 
   sink enterPop
-$ -> '$#10;enter $;$#10;' -> !OUT::write
     {tries: 5, candidate: $} -> #
     <?($@geneSoup.pop::length <..~$popSize>)> ..|@geneSoup.pop: $.candidate;
-    <{tries: <1..>}> def toReplace: $@geneSoup.pop::length -> $SYS::randomInt -> $+1;
+    <{tries: <1..>}> def toReplace: $@geneSoup.pop::length -> SYS::randomInt -> $+1;
       $ -> \(<{cell:<{value: <..$@geneSoup.pop($toReplace)>}>}> ..|@geneSoup.pop: $.candidate;
         <> { tries: $.tries-1, candidate: $.candidate} ! \) -> #
   end enterPop
@@ -158,10 +156,15 @@ $ -> '$#10;enter $;$#10;' -> !OUT::write
 
   <=1> $@.best !
   <>
+'$#10;round $@.pop;$#10;' -> !OUT::write
     def babies: $@.pop -> mate;
+'$#10;babies $babies;$#10;' -> !OUT::write
     $babies... -> $.value -> !updateBest
+'$#10;best $@.best;$#10;' -> !OUT::write
     @.pop: [$@.pop... -> ageAndMutate];
+'$#10;aged $@.pop;$#10;' -> !OUT::write
     $babies... -> !enterPop
+'$#10;joined $@.pop;$#10;' -> !OUT::write
     $isStagnated -> #
 end geneSoup
 
