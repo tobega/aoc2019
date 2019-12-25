@@ -25,20 +25,26 @@ templates calculateDistances
            distance: $base.distance + 1, doors: $base.doors}
       -> \isValid(
          <?($@calculateDistances.map($.at.row; $.at.col) <~='#'>)>
-           ..|@calculateDistances.next: $;
            $! \isValid)
-      -> \checkMap(def onMap: $@calculateDistances.map($.at.row; $.at.col);
+      -> \checkDoor( def onMap: $@calculateDistances.map($.at.row; $.at.col);
          $ -> #
          <?($doors <[<$onMap>]>)> { $..., doors: [$.doors..., $onMap] } !
-         <?($keys <[<$onMap>]>)>
-           // accounting for different paths through different doors
-           { key: { key: $onMap, doors: $.doors}, value: $.distance}
-           // re-putting the first (shortest) path, if one exists
-           -> @calculateDistances.found::put -> @calculateDistances.found::put -> !VOID
          <> $!
-      \checkMap)
-      -> \updateNonKeys( @calculateDistances.map($.at.row; $.at.col): '#';
-             \updateNonKeys) -> !VOID
+      \checkDoor)
+      -> \propagate(
+          ..|@calculateDistances.next: $;
+          $ ! \propagate)
+      -> \update( def onMap: $@calculateDistances.map($.at.row; $.at.col);
+        $ -> #
+        <?($keys <[<$onMap>]>)>
+          // accounting for different paths through different doors
+          { key: { key: $onMap, doors: $.doors}, value: $.distance}
+          // re-putting the first (shortest) path, if one exists
+          -> @calculateDistances.found::put -> @calculateDistances.found::put -> !VOID
+        <>
+          @calculateDistances.map($.at.row; $.at.col): '#';
+        \update)
+      -> !VOID
     1 -> #
   <?($@.next <[](1..)>)>
     @.current: $@.next;
@@ -64,7 +70,7 @@ processor DistanceTable
       {from: $@.at, to: $path($i)} -> @DistanceTable::get
       -> [ $... -> \distance( @: $.distance;
         $.doors... -> \(<?($path(1..$i) <~[<'(?i)$;'>]>)>
-          @distance: $@distance + 100; \) -> !VOID
+           @distance: $@distance + 100; \) -> !VOID
         $@! \distance) ] -> list/min
       -> @.length: $@.length + $;
       @.at: $path($i);
@@ -93,9 +99,10 @@ source geneSoup@{popSize:, genes:}
   end createCell
 
   templates getGamete
+    def which: 2 -> SYS::randomInt;
     def crossover: $genes::length + 1 -> SYS::randomInt;
-    @: $.chromosome(1; 1..$crossover);
-    $.chromosome(2)... -> \(<?($@getGamete <~[<$>]>)> ..|@getGamete: $;\) -> !VOID
+    @: $.chromosome(1 + $which; 1..$crossover);
+    $.chromosome(2 - $which)... -> \(<?($@getGamete <~[<$>]>)> ..|@getGamete: $;\) -> !VOID
     $@ !
   end getGamete
 
@@ -152,19 +159,15 @@ source geneSoup@{popSize:, genes:}
   @: {best: 99999999999,
     pop: [ 1..$popSize~/4 -> [ $generateHalfChromosome, $generateHalfChromosome ] -> createCell ]};
   0 -> #
-  $@.best !
 
   <=1> $@.best !
   <>
 '$#10;round $@.pop;$#10;' -> !OUT::write
     def babies: $@.pop -> mate;
-'$#10;babies $babies;$#10;' -> !OUT::write
     $babies... -> $.value -> !updateBest
 '$#10;best $@.best;$#10;' -> !OUT::write
     @.pop: [$@.pop... -> ageAndMutate];
-'$#10;aged $@.pop;$#10;' -> !OUT::write
     $babies... -> !enterPop
-'$#10;joined $@.pop;$#10;' -> !OUT::write
     $isStagnated -> #
 end geneSoup
 
