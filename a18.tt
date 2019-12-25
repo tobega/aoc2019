@@ -72,14 +72,14 @@ $keyPositions... -> \( def from: $.key;
   $ -> calculateDistances -> $::entries -> !distanceTable::add@{from: $from}
 \) -> !VOID
 
-templates geneSoup@{popSize:, genes:}
+source geneSoup@{popSize:, genes:}
   source generateHalfChromosome
     @: $genes;
-    [ 1..$genes::length -> ^@($@::length -> SYS::randomInt -> $+1) ] !
+    [ 1..$genes::length -> $@::length -> SYS::randomInt -> ^@($+1) ] !
   end generateHalfChromosome
 
   source createCell
-    { chromosome: $, value: [ $... -> distanceTable::pathLength ] -> list/min} !
+    { age: 0, chromosome: $, value: [ $... -> distanceTable::pathLength ] -> list/min} !
   end createCell
 
   templates getGamete
@@ -90,36 +90,69 @@ templates geneSoup@{popSize:, genes:}
   end getGamete
 
   templates mate
-    [ $ -> getGamete,
-      $@geneSoup.pop($popSize -> SYS::randomInt -> $+1) -> getGamete ]
-    -> createCell !
+    @: { adults: $, babies: []};
+    1 -> #
+    $@.babies!
+
+    <?($@.adults <[](2..)>)>
+      [ 1..2 ->
+        $@.adults::length -> SYS::randomInt -> ^@.adults($+1) -> getGamete ]
+      -> createCell -> ..|@.babies: $;
+      1 -> #
   end mate
 
   sink updateBest
-    <..~@geneSoup.best> @geneSoup.best: $;
+    <..~$@geneSoup.best> @geneSoup.best: $;
   end updateBest
 
   source isStagnated
     @: 0;
-    [1..3 -> $@geneSoup.pop($popSize -> SYS::randomInt -> $+1) ] -> #
+    [1..3 -> $popSize -> SYS::randomInt -> $@geneSoup.pop($+1) ] -> #
     $@!
     
     // check if all equal, actually it is not an array containing anything different from the first element
     <~[<~$(1)>]> @: 1;
+      'Stagnated at $(1);$#10;' -> !OUT::write
   end isStagnated
 
-  templates mutate
+  templates ageAndMutate
     @: $;
-    100 -> $SYS::randomInt -> \(<=0> $!\)
+    @.age: $@.age+1;
+    8 -> $SYS::randomInt -> #
 
-  @: {best: 99999999999;
-    pop: [ 1..$popSize -> [ $generateHalfChromosome, $generateHalfChromosome ] -> createCell ]};
+    <..$@.age> !VOID // died
+    <>
+      100 -> $SYS::randomInt -> \(<=0> $!\)
+      -> { rotate: $@::length -> $SYS::randomInt -> $+1, which: 2 -> $SYS::randomInt -> $+1}
+      -> @.chromosome($.which): $@.cromosome($.which; [$rotate..-1, 1..$rotate-1]);
+      100 -> $SYS::randomInt -> \(<=0> $!\)
+      -> { displace: $@::length -> $SYS::randomInt -> $+1, which: 2 -> $SYS::randomInt -> $+1}
+      -> @.chromosome($.which): $@.cromosome($.which; [$displace, 1..$displace-1, $displace+1..-1]);
+      $@!
+  end ageAndMutate
+
+  sink enterPop
+    {tries: 5, candidate: $} -> #
+    <?($@geneSoup.pop::length <..~$popSize>)> ..|@geneSoup.pop: $.candidate;
+    <{tries: <1..>}> def toReplace: $@geneSoup.pop::length -> $SYS::randomInt -> $+1;
+      $ -> \(<{cell:<{value: <..$@geneSoup.pop($toReplace)>}>}> ..|@geneSoup.pop: $.candidate;
+        <> { tries: $.tries-1, candidate: $.candidate} ! \) -> #
+  end enterPop
+
+  @: {best: 99999999999,
+    pop: [ 1..$popSize~/4 -> [ $generateHalfChromosome, $generateHalfChromosome ] -> createCell ]};
   0 -> #
+  $@.best !
 
   <=1> $@.best !
   <>
-    def babies: [ $@.pop... -> mate ];
+    def babies: $@.pop -> mate;
     $babies... -> $.value -> !updateBest
-    @.pop: [$babies... -> mutate]; // let's try to just replace elders
+    @.pop: [$@.pop... -> ageAndMutate];
+    $babies... -> !enterPop
     $isStagnated -> #
 end geneSoup
+
+// part 1
+'The best path is $geneSoup;
+' -> !OUT::write
