@@ -144,7 +144,7 @@ source geneSoup@{popSize:, genes:}
       -> @.chromosome($.which): $@.chromosome($.which; [$.rotate..-1, 1..$.rotate-1]);
       100 -> SYS::randomInt -> \(<=0> $!\)
       -> { displace: $genes::length -> SYS::randomInt -> $+1, which: 2 -> SYS::randomInt -> $+1}
-      -> @.chromosome($.which): $@.chromosome($.which; [$.displace, 1..$.displace-1, $.displace+1..-1]);
+      -> @.chromosome($.which): $@.chromosome($.which; [1..$.displace-1, $.displace+1..-1, $.displace]);
       $@!
   end ageAndMutate
 
@@ -152,7 +152,7 @@ source geneSoup@{popSize:, genes:}
     {tries: 5, candidate: $} -> #
     <?($@geneSoup.pop::length <..~$popSize>)> ..|@geneSoup.pop: $.candidate;
     <{tries: <1..>}> def toReplace: $@geneSoup.pop::length -> SYS::randomInt -> $+1;
-      $ -> \(<{cell:<{value: <..$@geneSoup.pop($toReplace)>}>}> ..|@geneSoup.pop: $.candidate;
+      $ -> \(<{candidate:<{value: <..$@geneSoup.pop($toReplace).value>}>}> ..|@geneSoup.pop: $.candidate;
         <> { tries: $.tries-1, candidate: $.candidate} ! \) -> #
   end enterPop
 
