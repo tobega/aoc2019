@@ -13,7 +13,7 @@ def doors: [ $map -> \[i,j](<'\p{Upper}'> $ !\) ... ...];
 
 templates calculateDistances
   def directions: [ { dRow: 0, dCol: -1}, { dRow: 0, dCol: 1}, { dRow: -1, dCol: 0}, { dRow: 1, dCol: 0}];
-  @: { map: $map, next: [], current: [{at: $, distance: 0, doors: []}], found: [] -> hash/Map};
+  @: { map: $map, next: [], current: [{at: $, distance: 0, doors: [], others: []}], found: [] -> hash/Map};
   @.map($.row;$.col): '#';
   1 -> #
   $@.found !
@@ -22,13 +22,15 @@ templates calculateDistances
     def base: ^@.current(1);
     $directions...
       -> { at: { row: $base.at.row + $.dRow, col: $base.at.col + $.dCol},
-           distance: $base.distance + 1, doors: $base.doors}
+           distance: $base.distance + 1, doors: $base.doors,
+           others: $base.others}
       -> \isValid(
          <?($@calculateDistances.map($.at.row; $.at.col) <~='#'>)>
            $! \isValid)
       -> \checkDoor( def onMap: $@calculateDistances.map($.at.row; $.at.col);
          $ -> #
          <?($doors <[<$onMap>]>)> { $..., doors: [$.doors..., $onMap] } !
+         <?($keys <[<$onMap>]>)> { $..., others: [$.others..., $onMap] } !
          <> $!
       \checkDoor)
       -> \propagate(
@@ -38,7 +40,7 @@ templates calculateDistances
         $ -> #
         <?($keys <[<$onMap>]>)>
           // accounting for different paths through different doors
-          { key: { key: $onMap, doors: $.doors}, value: $.distance}
+          { key: { key: $onMap, doors: $.doors, others: $.others}, value: $.distance}
           // re-putting the first (shortest) path, if one exists
           -> @calculateDistances.found::put -> @calculateDistances.found::put -> !VOID
         <>
@@ -56,7 +58,7 @@ processor DistanceTable
   @: [] -> hash/Map;
 
   sink add@{from:}
-    def entry: { key: { from: $from, to : $.key.key}, value: [{ doors: $.key.doors, distance: $.value}]};
+    def entry: { key: { from: $from, to : $.key.key}, value: [{ others: $.key.others, doors: $.key.doors, distance: $.value}]};
     $entry -> @DistanceTable::put -> { key: $entry.key, value: [$.value..., $entry.value...]} -> @DistanceTable::put -> !VOID
   end add
 
@@ -70,6 +72,8 @@ processor DistanceTable
       {from: $@.at, to: $path($i)} -> @DistanceTable::get
       -> [ $... -> \distance( @: $.distance;
         $.doors... -> \(<?($path(1..$i) <~[<'(?i)$;'>]>)>
+           @distance: $@distance + 1000; \) -> !VOID
+        $.others... -> \(<?($path(1..$i) <~[<'(?i)$;'>]>)>
            @distance: $@distance + 1000; \) -> !VOID
         $@! \distance) ] -> list/min
       -> @.length: $@.length + $;
@@ -135,7 +139,7 @@ source geneSoup@{popSize:, genes:}
   templates ageAndMutate
     @: $;
     @.age: $@.age+1;
-    8 -> SYS::randomInt -> #
+    15 -> SYS::randomInt -> #
 
     <..$@.age> !VOID // died
     <>
@@ -144,7 +148,7 @@ source geneSoup@{popSize:, genes:}
       -> @.chromosome($.which): $@.chromosome($.which; [$.rotate..-1, 1..$.rotate-1]);
       1..5 -> 100 -> SYS::randomInt -> \(<=0> $!\)
       -> { displace: $genes::length -> SYS::randomInt -> $+1, which: 2 -> SYS::randomInt -> $+1}
-      -> @.chromosome($.which): $@.chromosome($.which; [1..$.displace-1, $.displace+1..-1, $.displace]);
+      -> @.chromosome($.which): $@.chromosome($.which; [1..$.displace-1, $.displace+1..$.displace+1, $.displace, $.displace+2..-1]);
       $@!
   end ageAndMutate
 
@@ -157,7 +161,7 @@ source geneSoup@{popSize:, genes:}
   end enterPop
 
   @: {best: 99999999999,
-    pop: [ 1..$popSize~/4 -> [ $generateHalfChromosome, $generateHalfChromosome ] -> createCell ]};
+    pop: [ 1..$popSize -> [ $generateHalfChromosome, $generateHalfChromosome ] -> createCell ]};
   0 -> #
 
   <=1> $@.best !
@@ -171,5 +175,5 @@ source geneSoup@{popSize:, genes:}
 end geneSoup
 
 // part 1
-'The best path is $geneSoup@{popSize: 100, genes:$keys};
+'The best path is $geneSoup@{popSize: 500, genes:$keys};
 ' -> !OUT::write
