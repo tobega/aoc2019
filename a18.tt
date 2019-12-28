@@ -39,8 +39,7 @@ templates calculateDistances
       -> \update( def onMap: $@calculateDistances.map($.at.row; $.at.col);
         $ -> #
         <?($keys <[<$onMap>]>)>
-          // accounting for different paths through different doors
-          { key: { key: $onMap, doors: $.doors, others: $.others}, value: $.distance}
+          { key: $onMap, value: {distance: $.distance, doors: $.doors, others: $.others}}
           // re-putting the first (shortest) path, if one exists
           -> @calculateDistances.found::put -> @calculateDistances.found::put -> !VOID
         <>
@@ -58,8 +57,8 @@ processor DistanceTable
   @: [] -> hash/Map;
 
   sink add@{from:}
-    def entry: { key: { from: $from, to : $.key.key}, value: [{ others: $.key.others, doors: $.key.doors, distance: $.value}]};
-    $entry -> @DistanceTable::put -> { key: $entry.key, value: [$.value..., $entry.value...]} -> @DistanceTable::put -> !VOID
+    def entry: { key: { from: $from, to : $.key}, value: $.value};
+    $entry -> @DistanceTable::put -> 'Error: duplicate key for $;$#10;' -> !OUT::write
   end add
 
   templates pathLength
@@ -70,12 +69,12 @@ processor DistanceTable
 
     <> def i: $;
       {from: $@.at, to: $path($i)} -> @DistanceTable::get
-      -> [ $... -> \distance( @: $.distance;
+      -> \distance( @: $.distance;
         $.doors... -> \(<?($path(1..$i) <~[<'(?i)$;'>]>)>
            @distance: $@distance + 1000; \) -> !VOID
         $.others... -> \(<?($path(1..$i) <~[<'(?i)$;'>]>)>
            @distance: $@distance + 1000; \) -> !VOID
-        $@! \distance) ] -> list/min
+        $@! \distance)
       -> @.length: $@.length + $;
       @.at: $path($i);
   end pathLength
@@ -92,12 +91,12 @@ $keyPositions... -> \( def from: $.key;
   $ -> calculateDistances -> $::entries -> !distanceTable::add@{from: $from}
 \) -> !VOID
 
-source geneSoup@{popSize:, genes:}
-  source generateHalfChromosome
-    @: $genes;
-    [ 1..$genes::length -> \($@generateHalfChromosome::length -> SYS::randomInt -> ^@generateHalfChromosome($+1) !\) ] !
-  end generateHalfChromosome
+templates shuffle
+  @: $;
+  [ 1..$::length -> \($@shuffle::length -> SYS::randomInt -> ^@shuffle($+1) !\) ] !
+end shuffle
 
+source geneSoup@{popSize:, genes:}
   source createCell
     { age: 0, chromosome: $, value: [ $... -> distanceTable::pathLength ] -> list/min} !
   end createCell
@@ -144,11 +143,14 @@ source geneSoup@{popSize:, genes:}
     <..$@.age> !VOID // died
     <>
       1..2 -> 100 -> SYS::randomInt -> \(<=0> $!\)
-      -> { rotate: $genes::length -> SYS::randomInt -> $+1, which: 2 -> SYS::randomInt -> $+1}
-      -> @.chromosome($.which): $@.chromosome($.which; [$.rotate..-1, 1..$.rotate-1]);
+      -> $genes::length -> SYS::randomInt -> $+1
+      -> { a: $ -> SYS::randomInt -> $+1, b: $, which: 2 -> SYS::randomInt -> $+1 }
+      -> @.chromosome($.which): [$@.chromosome($.which;1..$.a-1), $@.chromosome($.which;$.a..$.b-1), $@.chromosome($.which;$.b..-1)] -> shuffle -> list/flatten;
       1..5 -> 100 -> SYS::randomInt -> \(<=0> $!\)
-      -> { displace: $genes::length -> SYS::randomInt -> $+1, which: 2 -> SYS::randomInt -> $+1}
-      -> @.chromosome($.which): $@.chromosome($.which; [1..$.displace-1, $.displace+1..$.displace+1, $.displace, $.displace+2..-1]);
+      -> { which: 2 -> SYS::randomInt -> $+1,
+        a: $genes::length -> SYS::randomInt -> $+1,
+        b: $genes::length -> SYS::randomInt -> $+1
+      } -> @.chromosome($.which; [$.a,$.b]): $@.chromosome($.which; [$.b, $.a])...;
       $@!
   end ageAndMutate
 
@@ -161,7 +163,7 @@ source geneSoup@{popSize:, genes:}
   end enterPop
 
   @: {best: 99999999999,
-    pop: [ 1..$popSize -> [ $generateHalfChromosome, $generateHalfChromosome ] -> createCell ]};
+    pop: [ 1..$popSize -> [ $genes -> shuffle, $genes -> shuffle ] -> createCell ]};
   0 -> #
 
   <=1> $@.best !
