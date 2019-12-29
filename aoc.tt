@@ -25,6 +25,10 @@ processor MarkII@{cooperativeThreading:}
     $@MarkII.memory($) mod 100 !
   end opcode
   templates paramAddress@{n:}
+    templates checkMem
+      $@MarkII.memory::length + 1..$ -> ..|@MarkII.memory: 0;
+      $ !
+    end checkMem
     templates modes
       @: $ ~/ 100;
       [ 1..$n -> ( $@modes mod 10 ! @modes: $@modes ~/ 10;) ] !
@@ -34,12 +38,8 @@ processor MarkII@{cooperativeThreading:}
       <=0> $@MarkII.memory($position + $i) + 1 !
       <=1> $position + $i !
       <=2> $@MarkII.memory($position + $i) + $@MarkII.base + 1 !
-    \) !
+    \) -> \[i]($ -> checkMem !\) !
   end paramAddress
-  templates checkMem
-    $@MarkII.memory::length + 1..$ -> ..|@MarkII.memory: 0;
-    $ !
-  end checkMem
 
     templates proceed
       $ -> \(<[]> $... ! <> $ !\) -> ..|@MarkII.input: $;
@@ -51,13 +51,13 @@ processor MarkII@{cooperativeThreading:}
 
       <?($ -> opcode <=1>)>
         def paramAddress: $ -> paramAddress@{n: 3};
-        def result: $paramAddress(3) -> checkMem;
+        def result: $paramAddress(3);
         @MarkII.memory($result): $@MarkII.memory($paramAddress(1)) + $@MarkII.memory($paramAddress(2));
         $ + 4 -> #
 
       <?($ -> opcode <=2>)>
         def paramAddress: $ -> paramAddress@{n: 3};
-        def result: $paramAddress(3) -> checkMem;
+        def result: $paramAddress(3);
         @MarkII.memory($result): $@MarkII.memory($paramAddress(1)) * $@MarkII.memory($paramAddress(2));
         $ + 4 -> #
 
@@ -68,7 +68,7 @@ processor MarkII@{cooperativeThreading:}
 
       <?($ -> opcode <=3>)>
         def paramAddress: $ -> paramAddress@{n: 1};
-        def result: $paramAddress(1) -> checkMem;
+        def result: $paramAddress(1);
         @MarkII.memory($result): ^@MarkII.input(1);
         $ + 2 -> #
 
@@ -90,13 +90,13 @@ processor MarkII@{cooperativeThreading:}
 
       <?($ -> opcode <=7>)>
         def paramAddress: $ -> paramAddress@{n: 3};
-        def result: $paramAddress(3) -> checkMem;
+        def result: $paramAddress(3);
         @MarkII.memory($result): $@MarkII.memory($paramAddress(1)) -> \(<..~$@MarkII.memory($paramAddress(2))> 1 ! <> 0 !\);
         $ + 4 -> #
 
       <?($ -> opcode <=8>)>
         def paramAddress: $ -> paramAddress@{n: 3};
-        def result: $paramAddress(3) -> checkMem;
+        def result: $paramAddress(3);
         @MarkII.memory($result): $@MarkII.memory($paramAddress(1)) -> \(<=$@MarkII.memory($paramAddress(2))> 1 ! <> 0 !\);
         $ + 4 -> #
 

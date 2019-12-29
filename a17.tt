@@ -13,7 +13,27 @@ templates collectAsciiRows
 end collectAsciiRows
 
 //part 1
-def view: $asciiProgram -> aoc/run -> collectAsciiRows;
+def viewProd: $asciiProgram -> aoc/run -> collectAsciiRows;
+
+def viewTest: '#######...#####
+#.....#...#...#
+#.....#...#...#
+......#...#...#
+......#...###.#
+......#.....#.#
+^########...#.#
+......#.#...#.#
+......#########
+........#...#..
+....#########..
+....#...#......
+....#...#......
+....#...#......
+....#####......
+'-> $::asCodePoints -> collectAsciiRows;
+
+def view: $viewProd;
+
 '
 $view... -> '$;
 ';
@@ -27,3 +47,87 @@ $view -> \[row,col](
   -> [ $... -> \(<~='.'> 1 !\) ] -> list/sum -> \(<3..> $ !\)
   -> ($row-1)*($col-1) ! \) -> list/flatten -> list/sum -> !OUT::write
 
+'
+
+' -> !OUT::write
+
+// part 2
+def vacuumbot: $view -> \[row,col](
+   <='^'> { row: $row, col: $col, dr: -1, dc: 0} !
+   <='<'> { row: $row, col: $col, dr: 0, dc: -1} !
+   <='v'> { row: $row, col: $col, dr: 1, dc: 0} !
+   <='>'> { row: $row, col: $col, dr: 0, dc: 1} !
+\)... ...;
+
+// start with simplest, ignoring alternative paths at intersections
+templates buildPath
+  @: {path: [], move: 0};
+  $ -> #
+  <?($view($.row+$.dr..$.row+$.dr; $.col+$.dc..$.col+$.dc) <=[['#']]>)>
+    @.move: $@.move+1;
+    { $..., row: $.row+$.dr, col: $.col+$.dc } -> #
+  <?($view($.row+$.dc..$.row+$.dc; $.col-$.dr..$.col-$.dr) <=[['#']]>)>
+    $@.move -> \(<1..> $!\) -> ..|@.path: '$;';
+    @.move: 0;
+    ..|@.path: 'R';
+    { $..., dr: $.dc, dc: -$.dr } -> #
+  <?($view($.row-$.dc..$.row-$.dc; $.col+$.dr..$.col+$.dr) <=[['#']]>)>
+    $@.move -> \(<1..> $!\) -> ..|@.path: '$;';
+    @.move: 0;
+    ..|@.path: 'L';
+    { $..., dr: -$.dc, dc: $.dr } -> #
+  <> //done
+    $@.move -> \(<1..> $!\) -> ..|@.path: '$;';
+    $@.path !
+end buildPath
+
+def path: $vacuumbot -> buildPath -> \[i]($... ! ',' !\);
+
+source createProgram
+  templates factor
+    def sizes: $;
+    @: { main: [], subs: [] };
+    1 -> #
+    <=0> {} !
+    <?($@.main::length <11..>)> {} !
+    <=$path::length+1> $@ !
+    <> $ -> \extend( def at: $;
+        1 -> #
+        <$sizes::length~..> 0 !
+        <?($@factor.subs::length <=$-1>)?($at+$sizes($)-1 <..$path::length>)>
+          ..|@factor.subs: $path($at..~$at+$sizes($));
+          ..|@factor.main: $;
+          $at + $sizes($)  -> \(<?($path($-1) <','>)> $! <> 0! \) !
+        <?($@factor.subs::length <$..>)?($path($at..~$at+$@factor.subs($)::length) <=$@factor.subs($)>)>
+          ..|@factor.main: $;
+          $at+$@factor.subs($)::length !
+        <> $+1 -> #
+      \extend) -> #
+  end factor
+
+  @: [1,1,1];
+  $@ -> factor -> #
+  <{main:<>}> $!
+  <>
+    1 -> \(<$@createProgram::length~..> 'No program found$#10;' -> !OUT::write
+        <?($@createProgram($) <..20>)> @createProgram($): $@createProgram($) + 1; 1!
+        <> @createProgram($): 1; $+1 -> #\)
+      -> $@ -> factor -> #
+end createProgram
+
+def program: $createProgram;
+def symbols: ['ABC'...];
+def main: $symbols($program.main) -> \[i]($! ',' !\) -> $(1..-2);
+
+def sourceCode: '$main...;
+$program.subs... -> '$(1..-2)...;
+';';
+
+'$sourceCode;
+' -> !OUT::write
+
+def input: '$sourceCode;n
+' -> $::asCodePoints;
+
+[2, $asciiProgram(2..-1)...] -> aoc/compute@{inputs: $input}
+-> \(<0..> $!\) -> !OUT::write
