@@ -15,7 +15,7 @@ templates allOrbits@{map:}
     ..|@: $next;
     def orbits: [ $next.orbits..., $next.orbitter ];
     [ $(2..-1)...,
-      $map... -> (<?($(1) <$next.orbitter>)> $!)
+      $map... -> \(<?($(1) <=$next.orbitter>)> $!\)
         -> { orbitter: $(2), orbits: $orbits} ] -> #
 end allOrbits
 

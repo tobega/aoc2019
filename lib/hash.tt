@@ -7,14 +7,14 @@ processor Set
   templates remove
     def val: $;
     def ind: $::hashCode -> $ mod $@Set::length + 1;
-    $@Set($ind) -> [i](<$val> ^@Set($ind;$i) !) -> #
+    $@Set($ind) -> \[i](<=$val> ^@Set($ind;$i) !\) -> #
     <[](0)> 0 !
     <> 1 !
   end remove
   templates isMember // returning $ was helpful: 1
     def val: $;
     def ind: $::hashCode -> $ mod $@Set::length + 1;
-    $@Set($ind) -> [i](<$val> $i !) -> #
+    $@Set($ind) -> \[i](<=$val> $i !\) -> #
     <[](0)> 0 !
     <> 1 !
   end isMember
@@ -22,7 +22,7 @@ processor Set
     def val: $;
     def ind: $::hashCode -> $ mod $@Set::length + 1;
     $ -> #
-    <?($@Set($ind) <[<$>]>)> 0 ! // Already exists
+    <?($@Set($ind) <[<=$>]>)> 0 ! // Already exists
     <?($@Set($ind) <[](32)>)> // rehash
       def old: $@Set;
       @Set: [1..$old::length*2 -> []];
@@ -44,12 +44,12 @@ processor Map
     def key: $;
     def ind: $::hashCode -> $ mod $@Map::length + 1;
     $@Map($ind)... -> #
-    <{key: <$key>}> $.value !
+    <{key: <=$key>}> $.value !
   end get
   templates remove
     def key: $;
     def ind: $::hashCode -> $ mod $@Map::length + 1;
-    $@Map($ind) -> [i](<{key: <$key>}> ^@Map($ind;$i) !)... -> $.value !
+    $@Map($ind) -> \[i](<{key: <=$key>}> ^@Map($ind;$i) !\)... -> $.value !
   end remove
   templates put
     def val: $;
@@ -61,7 +61,7 @@ processor Map
       $old... ... -> put -> !VOID
       $val -> put !
     <>
-      $ -> [i](<{key: <$val.key>}> ^@Map($ind;$i) !)... !
+      $ -> \[i](<{key: <=$val.key>}> ^@Map($ind;$i) !\)... !
       ..|@Map($ind): $val;
   end put
   @:[1..32 -> []];

@@ -6,11 +6,11 @@ def map: [ $IN::lines -> [ $... ] ];
 
 source maxAsteroidsDetectable
   @: { asteroids: 0 };
-  $map -> \location[j, i](
+  $map -> \location[j; i](
     <='#'>
       @: 0;
       def linesOfSight: [] -> hash/Set;
-      $map -> \eachAsteroid[y, x](
+      $map -> \eachAsteroid[y; x](
            <='#'?([$i,$j] <~=[$x,$y]>)>
                { dx: $x-$i, dy: $y-$j } -> \(
                   <{dx: <=0>, dy: <0..>}> { dx: 0, dy: 1} !
@@ -43,8 +43,8 @@ templates processScan
   def q: $ -> quadrant;
   def gcd: {a: $.dx, b: $.dy} -> math/gcd;
   { direction: { quadrant: $q,
-      sin: $ -> \(<?($q <=1|3>)> $.dx ! <> $.dy !\) -> $ ~/ $gcd -> math/abs,
-      cos: $ -> \(<?($q <=2|4>)> $.dx ! <> $.dy !\) -> $ ~/ $gcd -> math/abs},
+      sin: $ -> \(<?($q <=1|=3>)> $.dx ! <> $.dy !\) -> $ ~/ $gcd -> math/abs,
+      cos: $ -> \(<?($q <=2|=4>)> $.dx ! <> $.dy !\) -> $ ~/ $gcd -> math/abs},
     hops: $gcd } !
 end processScan
 
@@ -76,7 +76,7 @@ templates get200thShot
     $ -> #
 end get200thShot
 
-$map -> \scanAsteroids[y, x](
+$map -> \scanAsteroids[y; x](
      <='#'?([$x,$y] <~=[$station.x,$station.y]>)>
          { dx: $x-$station.x, dy: $y-$station.y } -> processScan
          -> { $..., x: $x, y: $y } !

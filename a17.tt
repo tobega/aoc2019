@@ -7,7 +7,7 @@ templates collectAsciiRows
   @: [[]];
   $... -> #
   $@ -> \(<?($(-1) <[](0)>)> $(1..-2) -> # <> $(-1)::length -> !OUT::write $ !\) !
-  <10> ..|@: [];
+  <=10> ..|@: [];
   <..27> $ -> 'Got ascii $;$#10;' -> !OUT::write
   <> ..|@(-1): '$#$;';
 end collectAsciiRows
@@ -39,7 +39,7 @@ $view... -> '$;
 ';
 ' -> !OUT::write
 
-$view -> \[row,col](
+$view -> \[row;col](
   $ -> \(<~='.'> $!\) ->
   // using a little trick where getting a range of one element just gives an empty list if it doesn't exist
   [ $view($row-1..$row-1;$col)..., $view($row+1..$row+1;$col)...,
@@ -52,7 +52,7 @@ $view -> \[row,col](
 ' -> !OUT::write
 
 // part 2
-def vacuumbot: $view -> \[row,col](
+def vacuumbot: $view -> \[row;col](
    <='^'> { row: $row, col: $col, dr: -1, dc: 0} !
    <='<'> { row: $row, col: $col, dr: 0, dc: -1} !
    <='v'> { row: $row, col: $col, dr: 1, dc: 0} !

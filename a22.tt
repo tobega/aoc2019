@@ -29,7 +29,7 @@ source doShuffle
 end doShuffle
 
 // part 1
-$doShuffle -> \[i](<2019> $i - 1 !\) -> !OUT::write
+$doShuffle -> \[i](<=2019> $i - 1 !\) -> !OUT::write
 '
 ' -> !OUT::write
 

@@ -3,13 +3,13 @@ import 'lib/list'
 
 def map: [ $IN::lines -> [ $... ]];
 
-def start: $map -> \[i,j](<='@'> { row: $i, col: $j } !\) ... ...;
+def start: $map -> \[i;j](<='@'> { row: $i, col: $j } !\) ... ...;
 
-def keyPositions: [ $map -> \[i,j](<'\p{Lower}'> { key: $, row: $i, col: $j } !\) ... ...];
+def keyPositions: [ $map -> \[i;j](<'\p{Lower}'> { key: $, row: $i, col: $j } !\) ... ...];
 
 def keys: [ $keyPositions... ->  $.key ];
 
-def doors: [ $map -> \[i,j](<'\p{Upper}'> $ !\) ... ...];
+def doors: [ $map -> \[i;j](<'\p{Upper}'> $ !\) ... ...];
 
 templates calculateDistances
   def directions: [ { dRow: 0, dCol: -1}, { dRow: 0, dCol: 1}, { dRow: -1, dCol: 0}, { dRow: 1, dCol: 0}];
@@ -29,8 +29,8 @@ templates calculateDistances
            $! \isValid)
       -> \checkDoor( def onMap: $@calculateDistances.map($.at.row; $.at.col);
          $ -> #
-         <?($doors <[<$onMap>]>)> { $..., doors: [$.doors..., $onMap] } !
-         <?($keys <[<$onMap>]>)> { $..., others: [$.others..., $onMap] } !
+         <?($doors <[<=$onMap>]>)> { $..., doors: [$.doors..., $onMap] } !
+         <?($keys <[<=$onMap>]>)> { $..., others: [$.others..., $onMap] } !
          <> $!
       \checkDoor)
       -> \propagate(
@@ -38,7 +38,7 @@ templates calculateDistances
           $ ! \propagate)
       -> \update( def onMap: $@calculateDistances.map($.at.row; $.at.col);
         $ -> #
-        <?($keys <[<$onMap>]>)>
+        <?($keys <[<=$onMap>]>)>
           { key: $onMap, value: {distance: $.distance, doors: $.doors, others: $.others}}
           // re-putting the first (shortest) path, if one exists
           -> @calculateDistances.found::put -> @calculateDistances.found::put -> !VOID
@@ -105,7 +105,7 @@ source geneSoup@{popSize:, genes:}
     def which: 2 -> SYS::randomInt;
     def crossover: $genes::length + 1 -> SYS::randomInt;
     @: $.chromosome(1 + $which; 1..$crossover);
-    $.chromosome(2 - $which)... -> \(<?($@getGamete <~[<$>]>)> ..|@getGamete: $;\) -> !VOID
+    $.chromosome(2 - $which)... -> \(<?($@getGamete <~[<=$>]>)> ..|@getGamete: $;\) -> !VOID
     $@ !
   end getGamete
 
@@ -131,7 +131,7 @@ source geneSoup@{popSize:, genes:}
     $@!
     
     // check if all equal, actually it is not an array containing anything different than best
-    <~[<~$@geneSoup.best>]> @: 1;
+    <~[<~=$@geneSoup.best>]> @: 1;
       'Stagnated at $(1);$#10;' -> !OUT::write
   end isStagnated
 

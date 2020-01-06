@@ -2,13 +2,13 @@ package list
 
 templates max
   <[](0)> !VOID
-  <> @: $(1); $(2..-1)... -> (<$@max~..> @max: $;) -> !VOID
+  <> @: $(1); $(2..-1)... -> \(<$@max~..> @max: $;\) -> !VOID
      $@ !
 end max
 
 templates min
   <[](0)> !VOID
-  <> @: $(1); $(2..-1)... -> (<..~$@min> @min: $;) -> !VOID
+  <> @: $(1); $(2..-1)... -> \(<..~$@min> @min: $;\) -> !VOID
      $@ !
 end min
 
@@ -19,7 +19,7 @@ templates sum
 end sum
 
 templates naturalOrder
-  <?($(1) <$(2)>)> 0 !
+  <?($(1) <=$(2)>)> 0 !
   <?($(1) <..$(2)>)> -1 !
   <> 1 !
 end naturalOrder
@@ -29,12 +29,12 @@ templates sort@{comparator:}
   $ -> #
   <[](2..)>
     def pivot: $(1);
-    [ [ $(2..-1)... -> (
+    [ [ $(2..-1)... -> \(
       <?([$, $pivot] -> comparator <..0>)>
         $ !
       <>
         ..|@sort: $;
-     )] -> sort@{comparator:comparator}..., $pivot, $@ -> sort@{comparator:comparator}... ] !
+     \)] -> sort@{comparator:comparator}..., $pivot, $@ -> sort@{comparator:comparator}... ] !
    <>
      $ !
 end sort

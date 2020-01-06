@@ -9,7 +9,7 @@ templates compute@{inputs:}
   def machine: $ -> MarkII@{cooperativeThreading: 0};
   $inputs -> machine::proceed -> #
   <{ status: <='end'> }> $.out !
-  <{ out: <0> }> !VOID // ignore passing diagnostic test
+  <{ out: <=0> }> !VOID // ignore passing diagnostic test
   <> $ !
 end compute
 
@@ -31,7 +31,7 @@ processor MarkII@{cooperativeThreading:}
     end checkMem
     templates modes
       @: $ ~/ 100;
-      [ 1..$n -> ( $@modes mod 10 ! @modes: $@modes ~/ 10;) ] !
+      [ 1..$n -> \( $@modes mod 10 ! @modes: $@modes ~/ 10;\) ] !
     end modes
     def position: $;
     $@MarkII.memory($) -> modes -> \[i](

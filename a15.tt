@@ -9,7 +9,7 @@ def directions: [ { move: 1, dX: 0, dY: -1}, { move: 2, dX: 0, dY: 1}, { move: 3
   templates findClosest@{map:, offset:, from:}
     def target: $;
     @:{ next:[], current:[{ position: $from, path: [] }], found: [],
-      visited: $map -> \[i,j](0!\),
+      visited: $map -> \[i;j](0!\),
       steps: 0
     };
     1 -> #
