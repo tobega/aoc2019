@@ -98,7 +98,9 @@ end shuffle
 
 source geneSoup@{popSize:, genes:}
   source createCell
-    { age: 0, chromosome: $, value: [ $... -> distanceTable::pathLength ] -> list/min} !
+    def values: [ $... -> distanceTable::pathLength ];
+    $ -> \[i](<?($values($i) <..$@geneSoup.best>)> @geneSoup.best: $values($i); @geneSoup.bestGene: $;\) -> !VOID
+    { age: 0, chromosome: $, value: $values -> list/min} !
   end createCell
 
   templates getGamete
@@ -115,9 +117,9 @@ source geneSoup@{popSize:, genes:}
     $@.babies!
 
     <?($@.adults <[](2..)>)>
-      [ 1..2 ->
-        \($@mate.adults::length -> SYS::randomInt -> ^@mate.adults($+1) -> getGamete ! \)]
-      -> createCell -> ..|@.babies: $;
+      def pair: [ 1..2 ->
+        \($@mate.adults::length -> SYS::randomInt -> ^@mate.adults($+1) ! \)];
+      1..4 -> [ $pair...  -> getGamete] -> createCell -> ..|@.babies: $;
       1 -> #
   end mate
 
@@ -135,43 +137,47 @@ source geneSoup@{popSize:, genes:}
       'Stagnated at $(1);$#10;' -> !OUT::write
   end isStagnated
 
+  templates mutate
+        @: $;
+        1..2 -> 50 -> SYS::randomInt -> \(<=0> $!\)
+        -> $genes::length -> SYS::randomInt -> $+1
+        -> { a: $ -> SYS::randomInt -> $+1, b: $, which: 2 -> SYS::randomInt -> $+1 }
+        -> @.chromosome($.which): [$@.chromosome($.which;1..$.a-1), $@.chromosome($.which;$.a..$.b-1), $@.chromosome($.which;$.b..-1)] -> shuffle -> list/flatten;
+        1..5 -> 20 -> SYS::randomInt -> \(<=0> $!\)
+        -> { which: 2 -> SYS::randomInt -> $+1,
+          a: $genes::length -> SYS::randomInt -> $+1,
+          b: $genes::length -> SYS::randomInt -> $+1
+        } -> @.chromosome($.which; [$.a,$.b]): $@.chromosome($.which; [$.b, $.a])...;
+        $@!
+  end mutate
+
   templates ageAndMutate
     @: $;
     @.age: $@.age+1;
-    15 -> SYS::randomInt -> #
+    8 -> SYS::randomInt -> #
 
     <..$@.age> !VOID // died
-    <>
-      1..2 -> 100 -> SYS::randomInt -> \(<=0> $!\)
-      -> $genes::length -> SYS::randomInt -> $+1
-      -> { a: $ -> SYS::randomInt -> $+1, b: $, which: 2 -> SYS::randomInt -> $+1 }
-      -> @.chromosome($.which): [$@.chromosome($.which;1..$.a-1), $@.chromosome($.which;$.a..$.b-1), $@.chromosome($.which;$.b..-1)] -> shuffle -> list/flatten;
-      1..5 -> 100 -> SYS::randomInt -> \(<=0> $!\)
-      -> { which: 2 -> SYS::randomInt -> $+1,
-        a: $genes::length -> SYS::randomInt -> $+1,
-        b: $genes::length -> SYS::randomInt -> $+1
-      } -> @.chromosome($.which; [$.a,$.b]): $@.chromosome($.which; [$.b, $.a])...;
-      $@!
+    <> $ -> mutate !
   end ageAndMutate
 
   sink enterPop
     {tries: 5, candidate: $} -> #
     <?($@geneSoup.pop::length <..~$popSize>)> ..|@geneSoup.pop: $.candidate;
     <{tries: <1..>}> def toReplace: $@geneSoup.pop::length -> SYS::randomInt -> $+1;
-      $ -> \(<{candidate:<{value: <..$@geneSoup.pop($toReplace).value>}>}> @geneSoup.pop($toReplace): $.candidate;
+      $ -> \(<{candidate:<{value: <..$@geneSoup.pop($toReplace).value>}>}> @geneSoup.pop($toReplace): $.candidate -> mutate;
         <> { tries: $.tries-1, candidate: $.candidate} ! \) -> #
   end enterPop
 
-  @: {best: 99999999999,
-    pop: [ 1..$popSize -> [ $genes -> shuffle, $genes -> shuffle ] -> createCell ]};
+  @: {best: 99999999999, bestGene:[]};
+  @.pop: [ 1..$popSize -> [ $genes -> shuffle, $genes -> shuffle ] -> createCell ];
   0 -> #
 
-  <=1> $@.best !
+  <=1> [$@.best, $@.bestGene] !
   <>
     def babies: $@.pop -> mate;
     $babies... -> $.value -> !updateBest
-'best $@.best;$#10;' -> !OUT::write
-    @.pop: [$@.pop... -> ageAndMutate];
+'best $:[$@.best, $@.bestGene];$#10;' -> !OUT::write
+    @.pop: [$@.pop ... -> ageAndMutate ];
     $babies... -> !enterPop
     $isStagnated -> #
 end geneSoup

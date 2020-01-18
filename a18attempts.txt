@@ -1,0 +1,7 @@
+best [5300, [c, x, t, e, g, a, u, y, j, p, l, s, w, m, d, r, i, q, h, z, f, n, v, o, b, k]]
+best [5300, [c, x, t, e, g, p, j, a, u, y, l, s, w, m, d, r, i, q, h, z, f, n, v, o, b, k]]
+best [5264, [c, x, t, e, g, p, j, a, u, y, l, d, r, i, q, h, z, s, m, w, f, n, v, o, b, k]]
+best [5264, [c, x, t, e, g, j, p, a, u, y, l, d, r, i, q, h, z, s, m, w, f, n, v, o, b, k]]
+best [5264, [c, x, e, t, g, p, j, a, u, y, l, d, r, i, q, h, z, s, m, w, f, n, v, o, b, k]]
+best [5298, [e, t, c, x, l, s, g, a, u, y, j, p, r, i, q, d, m, w, z, h, f, n, v, o, b, k]]
+best [5268, [c, x, e, t, g, p, j, a, u, y, l, d, r, i, q, z, s, w, m, h, f, n, v, o, b, k]]
