@@ -142,7 +142,7 @@ source geneSoup@{popSize:, genes:}
         1..2 -> 50 -> SYS::randomInt -> \(<=0> $!\)
         -> $genes::length -> SYS::randomInt -> $+1
         -> { a: $ -> SYS::randomInt -> $+1, b: $, which: 2 -> SYS::randomInt -> $+1 }
-        -> @.chromosome($.which): [$@.chromosome($.which;1..$.a-1), $@.chromosome($.which;$.a..$.b-1), $@.chromosome($.which;$.b..-1)] -> shuffle -> list/flatten;
+        -> @.chromosome($.which): [$@.chromosome($.which;1..$.a-1), $@.chromosome($.which;$.a..$.b-1), $@.chromosome($.which;$.b..last)] -> shuffle -> list/flatten;
         1..5 -> 20 -> SYS::randomInt -> \(<=0> $!\)
         -> { which: 2 -> SYS::randomInt -> $+1,
           a: $genes::length -> SYS::randomInt -> $+1,
