@@ -59,7 +59,7 @@ templates scanOrder
 end scanOrder
 
 templates get200thShot
-  @: { asteroids: $(2..-1), shot: 1, lastShot: $(1) };
+  @: { asteroids: $(2..last), shot: 1, lastShot: $(1) };
   1 -> #
   <?($@.shot <=200>)> $@.lastShot !
 

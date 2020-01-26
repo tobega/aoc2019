@@ -6,10 +6,10 @@ def asciiProgram: $IN::lines -> aoc/parseIntcode;
 templates collectAsciiRows
   @: [[]];
   $... -> #
-  $@ -> \(<?($(-1) <[](0)>)> $(1..-2) -> # <> $(-1)::length -> !OUT::write $ !\) !
+  $@ -> \(<?($(last) <[](0)>)> $(1..last-1) -> # <> $(last)::length -> !OUT::write $ !\) !
   <=10> ..|@: [];
   <..27> $ -> 'Got ascii $;$#10;' -> !OUT::write
-  <> ..|@(-1): '$#$;';
+  <> ..|@(last): '$#$;';
 end collectAsciiRows
 
 //part 1
@@ -117,10 +117,10 @@ end createProgram
 
 def program: $createProgram;
 def symbols: ['ABC'...];
-def main: $symbols($program.main) -> \[i]($! ',' !\) -> $(1..-2);
+def main: $symbols($program.main) -> \[i]($! ',' !\) -> $(1..last-1);
 
 def sourceCode: '$main...;
-$program.subs... -> '$(1..-2)...;
+$program.subs... -> '$(1..last-1)...;
 ';';
 
 '$sourceCode;
@@ -129,5 +129,5 @@ $program.subs... -> '$(1..-2)...;
 def input: '$sourceCode;n
 ' -> $::asCodePoints;
 
-[2, $asciiProgram(2..-1)...] -> aoc/compute@{inputs: $input}
+[2, $asciiProgram(2..last)...] -> aoc/compute@{inputs: $input}
 -> \(<0..> $!\) -> !OUT::write

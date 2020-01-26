@@ -5,7 +5,7 @@ def program: $IN::lines -> aoc/parseIntcode;
 
 // $program -> aoc/compute@{inputs:[]} -> !OUT::write
 
-def state1202: [ $program(1), 12, 2, $program(4..-1)...];
+def state1202: [ $program(1), 12, 2, $program(4..last)...];
 
 $state1202 -> aoc/compute@{inputs:[]} -> !OUT::write
 
@@ -14,7 +14,7 @@ $state1202 -> aoc/compute@{inputs:[]} -> !OUT::write
 
 0..99 -> \(def noun: $;
   0..99 -> \(def verb: $;
-    def state: [ $program(1), $noun, $verb, $program(4..-1)...];
+    def state: [ $program(1), $noun, $verb, $program(4..last)...];
     $state -> aoc/compute@{inputs:[]} -> \(<=19690720> 1! \) -> 100 * $noun + $verb !
   \) !
 \) -> !OUT::write

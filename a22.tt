@@ -13,11 +13,11 @@ source doShuffle
   $shuffle... -> #
   $@ !
   <{type: <='new'>}>
-    @: $@(-1..1:-1);
+    @: $@(last..1:-1);
   <{type: <='cut'>, count: <..0>}>
-    @: $@([$.count..-1, 1..~$.count]);
+    @: $@([$.count..last, 1..~$.count]);
   <{type: <='cut'>, count: <0..>}>
-    @: $@([$.count~..-1, 1..$.count]);
+    @: $@([$.count~..last, 1..$.count]);
   <{type: <='increment'>}>
     templates spread
       def increment: $;

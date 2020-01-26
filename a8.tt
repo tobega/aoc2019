@@ -19,7 +19,7 @@ templates part1
     <> $ + 1 -> @($): $@($) + 1;
   end spectrum
   @: $(1) -> spectrum;
-  $(2..-1)... -> spectrum -> #
+  $(2..last)... -> spectrum -> #
   $@(2) * $@(3) !
 
   <?($(1) <..~$@(1)>)> @: $;
@@ -37,7 +37,7 @@ templates composeImage
     <> $layers($) !
   end findColour
   def layers: $;
-  $layers(1) -> \[row]($ -> \[col]($layers(1..-1;$row;$col) -> findColour !\) !\) !
+  $layers(1) -> \[row]($ -> \[col]($layers(1..last;$row;$col) -> findColour !\) !\) !
 end composeImage
 
 $message -> composeImage... ->

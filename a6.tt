@@ -14,7 +14,7 @@ templates allOrbits@{map:}
     def next: $(1);
     ..|@: $next;
     def orbits: [ $next.orbits..., $next.orbitter ];
-    [ $(2..-1)...,
+    [ $(2..last)...,
       $map... -> \(<?($(1) <=$next.orbitter>)> $!\)
         -> { orbitter: $(2), orbits: $orbits} ] -> #
 end allOrbits
@@ -35,7 +35,7 @@ templates findPath
     $ + 1 -> #
 
   <>
-    [ $fromOrbits(-1..$:-1)..., $toOrbits($-1..-1)... ] !
+    [ $fromOrbits(last..$:-1)..., $toOrbits($-1..last)... ] !
 end findPath
 
 ['YOU', 'SAN'] -> findPath -> $::length - 1 -> !OUT::write
