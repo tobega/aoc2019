@@ -15,7 +15,8 @@ source doShuffle
   <{type: <='new'>}>
     @: $@(last..1:-1);
   <{type: <='cut'>, count: <..0>}>
-    @: $@([$.count..last, 1..~$.count]);
+    def cut: $@::length+1+$.count;
+    @: $@([$cut..last, 1..~$cut]);
   <{type: <='cut'>, count: <0..>}>
     @: $@([$.count~..last, 1..$.count]);
   <{type: <='increment'>}>
