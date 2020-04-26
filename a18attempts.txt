@@ -5,3 +5,13 @@ best [5264, [c, x, t, e, g, j, p, a, u, y, l, d, r, i, q, h, z, s, m, w, f, n, v
 best [5264, [c, x, e, t, g, p, j, a, u, y, l, d, r, i, q, h, z, s, m, w, f, n, v, o, b, k]]
 best [5298, [e, t, c, x, l, s, g, a, u, y, j, p, r, i, q, d, m, w, z, h, f, n, v, o, b, k]]
 best [5268, [c, x, e, t, g, p, j, a, u, y, l, d, r, i, q, z, s, w, m, h, f, n, v, o, b, k]]
+5266 [t, e, g, p, j, a, u, y, c, x, m, l, d, r, i, q, h, s, z, w, f, n, v, o, b, k]
+5266 [e, t, g, j, p, a, u, y, c, x, m, l, d, r, i, q, h, s, z, w, f, n, v, o, b, k]
+5266 [e, t, g, p, j, a, u, y, c, m, x, l, d, r, i, q, h, s, z, w, f, n, v, o, b, k]
+5266 [e, t, g, p, j, a, u, y, c, x, m, l, d, r, i, q, h, z, s, w, f, n, v, o, b, k]
+best [5262, [e, t, c, x, l, g, a, u, y, p, j, d, r, i, q, h, z, s, w, m, f, n, v, o, b, k]]
+best [5262, [t, e, c, x, l, g, a, u, y, p, j, d, r, i, q, h, s, z, m, w, f, n, v, o, b, k]]
+
+
+// part 2
+With four bots, the best path is [2136, [c, x, e, g, t, p, j, l, a, s, u, w, d, y, r, m, z, i, q, h, f, n, v, o, b, k]]
