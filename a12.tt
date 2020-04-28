@@ -14,26 +14,29 @@ templates absSum
   $@ !
 end absSum
 
-templates moonTime@{increase:}
-  @: $;
-  1..$increase -> \step(
-    @moonTime: $@moonTime -> \updateVelocity[i](
+templates step
+  def moons: $;
+  $ -> \updateVelocity[i](
       @: $;
-      $@moonTime... -> { ddx: [$.position.x, $@.position.x] -> list/naturalOrder,
+      $moons... -> { ddx: [$.position.x, $@.position.x] -> list/naturalOrder,
         ddy: [$.position.y, $@.position.y] -> list/naturalOrder,
         ddz: [$.position.z, $@.position.z] -> list/naturalOrder }
       -> @.velocity: { dx: $@.velocity.dx + $.ddx,
         dy: $@.velocity.dy + $.ddy,
         dz: $@.velocity.dz + $.ddz};
       $@ !
-    \updateVelocity);
-    @moonTime: $@moonTime -> \updatePosition[i](
+    \updateVelocity)
+  -> \updatePosition[i](
       { position: { x: $.position.x + $.velocity.dx,
           y: $.position.y + $.velocity.dy,
           z: $.position.z + $.velocity.dz },
         velocity: $.velocity } !
-    \updatePosition);
-  \step) -> !VOID
+    \updatePosition) !
+end step
+
+templates moonTime@{increase:}
+  @: $;
+  1..$increase ->  @: $@ -> step;
   $@ !
 end moonTime
 
@@ -41,11 +44,48 @@ end moonTime
 def moonsAt1000: $moonsAtStart -> moonTime@{increase: 1000};
 [ $moonsAt1000... -> [ $.position -> absSum, $.velocity -> absSum ] -> $(1) * $(2) ] -> list/sum -> !OUT::write
 
-// explore part 2
-templates findReps
-  @: { moons: $moonsAtStart, time: 0};
-  def seen: [] -> hash/Set;
-  0 -> #
-  <> @.time: $@.time + $;
-    @.moons:  $@.moons -> moonTime@{increase: $};
-end findReps
+'
+' -> !OUT::write
+
+// part 2
+templates findHalfCycles
+  @: { rx: 0, ry: 0, rz: 0, time: 1};
+  $moonsAtStart -> step -> #
+  <~[<~{velocity: <{dx: <=0>} ?($@.rx <=0>)>}>]>
+    @.rx: $@.time;
+    $ -> #
+  <~[<~{velocity: <{dy: <=0>} ?($@.ry <=0>)>}>]>
+    @.ry: $@.time;
+    $ -> #
+  <~[<~{velocity: <{dz: <=0>} ?($@.rz <=0>)>}>]>
+    @.rz: $@.time;
+    $ -> #
+  <?($@ <{rx: <~=0>, ry: <~=0>, rz: <~=0>}>)>
+    $@!
+  <>
+    @.time: $@.time + 1;
+    $ -> step -> #
+end findHalfCycles
+
+def halfCycles: $moonsAtStart -> findHalfCycles;
+
+templates factorize
+  @: [$(1)];
+  $(2..last)... -> \newFactor(
+    @: $;
+    @factorize: $@factorize -> \[i](
+      def this: $;
+      {a: $, b:$@newFactor} -> math/gcd -> #
+      <=1> $this !
+      <> $ ! $this ~/ $ ! @newFactor: $@newFactor ~/ $;
+    \);
+    ..|@factorize: $@;
+  \newFactor) -> !VOID
+  $@!
+end factorize
+
+[$halfCycles... -> \(<~?($::key <='time'>)> $::value !\)]
+-> factorize
+-> list/product -> 2 * $
+-> !OUT::write
+

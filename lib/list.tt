@@ -33,6 +33,17 @@ test 'sum'
   assert [] -> sum <=0> 'empty list has sum 0'
 end 'sum'
 
+templates product
+  @: 1;
+  $... -> @: $@ * $;
+  $@ !
+end product
+
+test 'product'
+  assert [1, 5, 3, 9, 2] -> product <=270> 'product should be 270'
+  assert [] -> product <=1> 'empty list has product 1'
+end 'product'
+
 templates naturalOrder
   <?($(1) <=$(2)>)> 0 !
   <?($(1) <..$(2)>)> -1 !
