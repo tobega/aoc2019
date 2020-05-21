@@ -51,13 +51,13 @@ def moonsAt1000: $moonsAtStart -> moonTime@{increase: 1000};
 templates findHalfCycles
   @: { rx: 0, ry: 0, rz: 0, time: 1};
   $moonsAtStart -> step -> #
-  <~[<~{velocity: <{dx: <=0>} ?($@.rx <=0>)>}>]>
+  <~[<{velocity: <{dx: <~=0>}>}>] |?($@.rx <~=0>)>
     @.rx: $@.time;
     $ -> #
-  <~[<~{velocity: <{dy: <=0>} ?($@.ry <=0>)>}>]>
+  <~[<{velocity: <{dy: <~=0>}>}>] |?($@.ry <~=0>)>
     @.ry: $@.time;
     $ -> #
-  <~[<~{velocity: <{dz: <=0>} ?($@.rz <=0>)>}>]>
+  <~[<{velocity: <{dz: <~=0>}>}>] |?($@.rz <~=0>)>
     @.rz: $@.time;
     $ -> #
   <?($@ <{rx: <~=0>, ry: <~=0>, rz: <~=0>}>)>
