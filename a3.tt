@@ -15,19 +15,19 @@ templates mapWirePositions
   @: {x: 0, y: 0};
   $... -> #
 
-  <{direction: <='U'>}>
+  when <{direction: <='U'>}> do
     1..$.distance -> { x: $@.x, y: $@.y + $ } !
     (y: $@.y + $.distance) -> ..|@: $;
 
-  <{direction: <='D'>}>
+  when <{direction: <='D'>}> do
     1..$.distance -> { x: $@.x, y: $@.y - $ } !
     (y: $@.y - $.distance) -> ..|@: $;
 
-  <{direction: <='L'>}>
+  when <{direction: <='L'>}> do
     1..$.distance -> { x: $@.x - $, y: $@.y } !
     (x: $@.x - $.distance) -> ..|@: $;
 
-  <{direction: <='R'>}>
+  when <{direction: <='R'>}> do
     1..$.distance -> { x: $@.x + $, y: $@.y } !
     (x: $@.x + $.distance) -> ..|@: $;
 end mapWirePositions
@@ -36,7 +36,7 @@ end mapWirePositions
 def wire1: [] -> hash/Set;
 $wires(1) -> mapWirePositions -> wire1::add -> !VOID
 
-[ $wires(2) -> mapWirePositions -> \(<?($ -> wire1::isMember <=1>)> $ !\)
+[ $wires(2) -> mapWirePositions -> \(when <?($ -> wire1::isMember <=1>)> do $ !\)
   -> math/manhattanDistance ] -> list/min -> !OUT::write
 
 '

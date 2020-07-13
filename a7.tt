@@ -7,8 +7,8 @@ def amplifierControllerSoftware: $IN::lines -> aoc/parseIntcode;
 templates thrusters
   @: $;
   0 -> #
-  <?($@ <=[]>)> $ !
-  <> def val: $; $amplifierControllerSoftware -> aoc/compute@{inputs: [^@(1), $val]} -> #
+  when <?($@ <=[]>)> do $ !
+  when <> do def val: $; $amplifierControllerSoftware -> aoc/compute@{inputs: [^@(1), $val]} -> #
 end thrusters
 
 def valueSet: [ 0..4 ];
@@ -19,16 +19,16 @@ def valueSet: [ 0..4 ];
 
 templates feedbackMachines
   @: [1..$::length -> $amplifierControllerSoftware -> aoc/MarkII@{cooperativeThreading: 0} ];
-  $ -> \[i]($ -> @feedbackMachines($i)::proceed ! \) -> \(<~[](0)> 'WTF! $;' ! \) -> !OUT::write
+  $ -> \[i]($ -> @feedbackMachines($i)::proceed ! \) -> \(when <~[](0)> do 'WTF! $;' ! \) -> !OUT::write
   { out: 0, to: 1 } -> #
 
-  <{status: <='end'>, to: <=1>}> $.out !
+  when <{status: <='end'>, to: <=1>}> do $.out !
 
-  <{out: <>, to: <>}>
+  when <{out: <>, to: <>}> do
     def stage: $;
     $stage -> $.out -> @($stage.to)::proceed -> { $..., to: $stage.to mod $@::length + 1 } -> #
 
-  <>
+  when <> do
     'Error $;' -> !OUT::write
 end feedbackMachines
 

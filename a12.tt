@@ -51,18 +51,18 @@ def moonsAt1000: $moonsAtStart -> moonTime@{increase: 1000};
 templates findHalfCycles
   @: { rx: 0, ry: 0, rz: 0, time: 1};
   $moonsAtStart -> step -> #
-  <~[<{velocity: <{dx: <~=0>}>}>] |?($@.rx <~=0>)>
+  when <[<{velocity: <{dx: <=0>}>}>+ VOID] ?($@.rx <=0>)> do
     @.rx: $@.time;
     $ -> #
-  <~[<{velocity: <{dy: <~=0>}>}>] |?($@.ry <~=0>)>
+  when <[<{velocity: <{dy: <=0>}>}>+ VOID] ?($@.ry <=0>)> do
     @.ry: $@.time;
     $ -> #
-  <~[<{velocity: <{dz: <~=0>}>}>] |?($@.rz <~=0>)>
+  when <[<{velocity: <{dz: <=0>}>}>+ VOID] ?($@.rz <=0>)> do
     @.rz: $@.time;
     $ -> #
-  <?($@ <{rx: <~=0>, ry: <~=0>, rz: <~=0>}>)>
+  when <?($@ <{rx: <~=0>, ry: <~=0>, rz: <~=0>}>)> do
     $@!
-  <>
+  when <> do
     @.time: $@.time + 1;
     $ -> step -> #
 end findHalfCycles
@@ -76,8 +76,9 @@ templates factorize
     @factorize: $@factorize -> \[i](
       def this: $;
       {a: $, b:$@newFactor} -> math/gcd -> #
-      <=1> $this !
-      <> $ ! $this ~/ $ ! @newFactor: $@newFactor ~/ $;
+      when <=1> do $this !
+      when <=$this> do $ ! @newFactor: $@newFactor ~/ $;
+      when <> do $ ! $this ~/ $ ! @newFactor: $@newFactor ~/ $;
     \);
     ..|@factorize: $@;
   \newFactor) -> !VOID

@@ -10,23 +10,23 @@ templates arcadeCabinet
   [] -> engine::proceed -> #
   '$@.screen... -> '$... -> \(<=0> ' '! <=1> '█'! <=2> '░'! <=3> '_'! <=4> '*'!\);$#10;';$#10;' -> !OUT::write
   $@.screen !
-  <{status: <='end'>}>
+  when <{status: <='end'>}> do
     @.done: 1;
     ..|@.output: $.out;
     $@.output -> #
-  <{out: <>}>
+  when <{out: <>}> do
     ..|@.output: $.out;
     $@.output -> #
-  <[](3..)>
+  when <[](3..)> do
     def x: 1 + ^@.output(1);
     def y: 1 + ^@.output(1);
     $@.screen::length+1..$y -> ..|@.screen: [];
     $@.screen($y)::length+1..$x -> ..|@.screen($y): 0;
     @.screen($y;$x): ^@.output(1);
     [] -> \(<?($@arcadeCabinet.done <=0>)> $ !\) -> engine::proceed -> #
-  <[]>
+  when <[]> do
     [] -> \(<?($@arcadeCabinet.done <=0>)> $ !\) -> engine::proceed -> #
-  <> 'Error $;' -> !OUT::write
+  otherwise 'Error $;' -> !OUT::write
 end arcadeCabinet
 
 // part 1
@@ -39,33 +39,33 @@ templates botPlayer
   def engine: [2, $(2..last)...] -> aoc/MarkII@{cooperativeThreading: 1};
   [] -> engine::proceed -> #
   $@.score !
-  <='>'>
+  when <='>'> do
     [ $@.ballX - $@.paddleX -> math/sign ] -> engine::proceed -> #
-  <{status: <='end'>}>
+  when <{status: <='end'>}> do
     @.done: 1;
     ..|@.output: $.out;
     $@.output -> #
-  <{out: <>}>
+  when <{out: <>}> do
     ..|@.output: $.out;
     $@.output -> #
-  <[](3..)?($(1) <=-1>)?($(2) <=0>)>
+  when <[](3..)?($(1) <=-1>)?($(2) <=0>)> do
     @.score: $(3);
     @.output: $@.output(4..last);
     [] -> \(<?($@botPlayer.done <=0>)> $ !\) -> engine::proceed -> #
-  <[](3..)?($(3) <=3>)>
+  when <[](3..)?($(3) <=3>)> do
     @.paddleX: $(1);
     @.output: $@.output(4..last);
     [] -> \(<?($@botPlayer.done <=0>)> $ !\) -> engine::proceed -> #
-  <[](3..)?($(3) <=4>)>
+  when <[](3..)?($(3) <=4>)> do
     @.ballX: $(1);
     @.output: $@.output(4..last);
     [] -> \(<?($@botPlayer.done <=0>)> $ !\) -> engine::proceed -> #
-  <[](3..)>
+  when <[](3..)> do
     @.output: $@.output(4..last);
     [] -> \(<?($@botPlayer.done <=0>)> $ !\) -> engine::proceed -> #
-  <[]>
+  when <[]> do
     [] -> \(<?($@botPlayer.done <=0>)> $ !\) -> engine::proceed -> #
-  <> 'Error $;' -> !OUT::write
+  otherwise 'Error $;' -> !OUT::write
 end botPlayer
 
 // part 2

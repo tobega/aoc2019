@@ -9,13 +9,13 @@ def orbitMap: [ $IN::lines -> orbit ];
 templates allOrbits@{map:}
   @: [];
   [ {orbitter: $, orbits:[]} ] -> #
-  <[](0)> $@ !
-  <>
+  when <[](0)> do $@ !
+  when <> do
     def next: $(1);
     ..|@: $next;
     def orbits: [ $next.orbits..., $next.orbitter ];
     [ $(2..last)...,
-      $map... -> \(<?($(1) <=$next.orbitter>)> $!\)
+      $map... -> \(when <?($(1) <=$next.orbitter>)> do $!\)
         -> { orbitter: $(2), orbits: $orbits} ] -> #
 end allOrbits
 
@@ -27,14 +27,14 @@ def aroundCOM: 'COM' -> allOrbits@{map: $orbitMap};
 
 templates findPath
   def ends: $;
-  def fromOrbits: $aroundCOM... -> \(<{orbitter: <=$ends(1)>}> $.orbits !\);
-  def toOrbits: $aroundCOM... -> \(<{orbitter: <=$ends(2)>}> $.orbits !\);
+  def fromOrbits: $aroundCOM... -> \(when <{orbitter: <=$ends(1)>}> do $.orbits !\);
+  def toOrbits: $aroundCOM... -> \(when <{orbitter: <=$ends(2)>}> do $.orbits !\);
   1 -> #
 
-  <?($fromOrbits($) <=$toOrbits($)>)>
+  when <?($fromOrbits($) <=$toOrbits($)>)> do
     $ + 1 -> #
 
-  <>
+  when <> do
     [ $fromOrbits(last..$:-1)..., $toOrbits($-1..last)... ] !
 end findPath
 

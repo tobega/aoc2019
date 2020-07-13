@@ -9,16 +9,17 @@ end parseReaction
 def reactionMap: [ $IN::lines -> parseReaction -> { key: $.result.name, value: $ } ] -> hash/Map;
 
 templates convertToIngredients@{stock:, need:}
-      <~'ORE'>
+      when <~'ORE'> do
         def reaction: $ -> reactionMap::get;
         def amountNeeded: $ -> need::remove;
         def reactionsNeeded: ($amountNeeded + $reaction.result.amount - 1) ~/ $reaction.result.amount;
         $reaction.ingredients... ->
         \calculateNeed(def ingredient: $;
-          def available: [ $ingredient.name -> stock::remove ] -> \(<=[]> 0 ! <> $(1) !\);
+          def available: [ $ingredient.name -> stock::remove ] -> \(when <=[]> do 0 ! when <> do $(1) !\);
           $available - $ingredient.amount * $reactionsNeeded ->
-          \storeOrProcure( <0~..> { key: $ingredient.name, value: $ } -> stock::put -> !VOID
-            <..~0>
+          \storeOrProcure(
+            when <0~..> do { key: $ingredient.name, value: $ } -> stock::put -> !VOID
+            when <..~0> do
               def deficit: -$;
               { key: $ingredient.name, value: $deficit }
               -> need::put // continues with old entry if one existed
@@ -33,9 +34,9 @@ templates calculateOreForFuel@{stock:}
   def need: [{ key: 'FUEL', value: $ }] -> hash/Map;
   [$need::entries -> $.key] -> #
 
-  <=['ORE']> 'ORE' -> need::get !
+  when <=['ORE']> do 'ORE' -> need::get !
 
-  <> $... -> convertToIngredients@{stock: $stock, need: $need } -> !VOID
+  otherwise $... -> convertToIngredients@{stock: $stock, need: $need } -> !VOID
     [$need::entries -> $.key] -> #
 end calculateOreForFuel
 
@@ -52,16 +53,16 @@ source calculateFuelFromTrillion
   $trillion -> #
   $@ !
 
-  <$oreForOneFuel..>
+  when <$oreForOneFuel..> do
     def remaining: $;
     def fuelToMake: $ ~/ $oreForOneFuel;
     @: $@ + $fuelToMake;
     $fuelToMake -> calculateOreForFuel@{stock: $stock} -> $remaining - $ -> #
 
-  <>
+  otherwise
     def remaining: $;
     1 -> calculateOreForFuel@{stock: $stock} ->
-      \(<..$remaining> @calculateFuelFromTrillion: $@calculateFuelFromTrillion + 1; $remaining - $ ! \) -> #
+      \(when <..$remaining> do @calculateFuelFromTrillion: $@calculateFuelFromTrillion + 1; $remaining - $ ! \) -> #
 end calculateFuelFromTrillion
 
 $calculateFuelFromTrillion -> !OUT::write

@@ -10,8 +10,8 @@
             "request": "launch",
             "mainClass": "tailspin.Tailspin",
             "classPaths": ["../tailspin-v0/tailspin.jar",
-                 "../tailspin-v0/lib/antlr-runtime-4.7.2.jar"],
-            "args": "a1.tt < a1in.txt"
+                 "../tailspin-v0/lib/antlr-runtime-4.8.jar"],
+            "args": "a13.tt < a13in.txt"
         },
         {
             "type": "java",
@@ -19,7 +19,7 @@
             "request": "launch",
             "mainClass": "tailspin.Tailspin",
             "classPaths": ["../tailspin-v0/tailspin.jar",
-                 "../tailspin-v0/lib/antlr-runtime-4.7.2.jar"],
+                 "../tailspin-v0/lib/antlr-runtime-4.8.jar"],
             "args": "--test lib/hash.tt"
         }
     ]

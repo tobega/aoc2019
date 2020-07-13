@@ -5,8 +5,8 @@ end toInt
 templates valid
   def pw: $;
   def digits: ['$pw;'... -> toInt ];
-  def diffs: $digits -> \[i](<?($i <2..>)> $ - $digits($i - 1) !\);
-  $diffs -> \(<[<=0>]> $ !\) -> \(<~[<..~0>]> $ !\) -> $pw !
+  def diffs: $digits -> \[i](when <?($i <2..>)> do $ - $digits($i - 1) !\);
+  $diffs -> \(when <[<=0>]> do $ !\) -> \(when <~[<..~0>]> do $ !\) -> $pw !
 end valid
 
 //part 1
@@ -19,10 +19,10 @@ $validPasswords -> $::length -> !OUT::write
 // part 2
 templates runLengths
   def in: $;
-  def breaks: [ $ -> \[i](<?($i <=1>)> 1 ! <~?($in($i) <=$in($i - 1)>)> $i !\)..., $in::length + 1];
-  $breaks  -> \[i](<?($i <2..>)> $ - $breaks($i - 1) !\) !
+  def breaks: [ $ -> \[i](when <?($i <=1>)> do 1 ! when <~?($in($i) <=$in($i - 1)>)> do $i !\)..., $in::length + 1];
+  $breaks  -> \[i](when <?($i <2..>)> do $ - $breaks($i - 1) !\) !
 end runLengths
 
 [ $validPasswords... -> \( def pw: $;
-  [ '$pw;'... ] -> runLengths -> \(<[<=2>]> $pw !\) !\) ] -> $::length -> !OUT::write
+  [ '$pw;'... ] -> runLengths -> \(when <[<=2>]> do $pw !\) !\) ] -> $::length -> !OUT::write
 

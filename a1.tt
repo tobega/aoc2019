@@ -17,9 +17,9 @@ templates fuelFuel
   @: 0;
   $ -> #
   $@ !
-  <>
+  when <> do
     def fuel: $ ~/ 3 - 2;
-    $fuel -> \(<0~..>
+    $fuel -> \(when <0~..> do
       @fuelFuel: $@fuelFuel + $fuel;
       $fuel !
     \) -> #
@@ -30,7 +30,7 @@ end fuelFuel
 // Alternative code
 
 templates fuelWeight
-  $ ~/ 3 - 2 -> \(<0~..> $ !\) !
+  $ ~/ 3 - 2 -> \(when <0~..> do $ !\) !
 end fuelWeight
 
 '
