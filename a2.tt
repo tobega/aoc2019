@@ -1,4 +1,4 @@
-import 'aoc'
+include 'aoc'
 
 // def program: [ 1,9,10,3,2,3,11,0,99,30,40,50 ];
 def program: $IN::lines -> aoc/parseIntcode;

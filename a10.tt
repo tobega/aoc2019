@@ -1,6 +1,6 @@
-import 'lib/math'
-import 'lib/hash'
-import 'lib/list'
+include 'lib/math'
+include 'lib/hash'
+include 'lib/list'
 
 def map: [ $IN::lines -> [ $... ] ];
 

@@ -1,5 +1,3 @@
-package hash
-
 processor Set
   source values
     $@Set... ... !

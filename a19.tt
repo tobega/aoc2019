@@ -1,5 +1,5 @@
-import 'aoc'
-import 'lib/list'
+include 'aoc'
+include 'lib/list'
 
 def droneSystem: $IN::lines -> aoc/parseIntcode;
 

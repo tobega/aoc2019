@@ -1,6 +1,6 @@
-import 'aoc'
-import 'lib/list'
-import 'lib/math'
+include 'aoc'
+include 'lib/list'
+include 'lib/math'
 
 def game: $IN::lines -> aoc/parseIntcode;
 

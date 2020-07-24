@@ -1,5 +1,5 @@
-import 'aoc'
-import 'lib/hash'
+include 'aoc'
+include 'lib/hash'
 
 def botInterface: $IN::lines -> aoc/parseIntcode;
 

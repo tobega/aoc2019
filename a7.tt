@@ -1,6 +1,6 @@
-import 'aoc'
-import 'lib/combinatorics'
-import 'lib/list'
+include 'aoc'
+include 'lib/combinatorics'
+include 'lib/list'
 
 def amplifierControllerSoftware: $IN::lines -> aoc/parseIntcode;
 

@@ -1,4 +1,4 @@
-import 'aoc'
+include 'aoc'
 
 def boostProgram: $IN::lines -> aoc/parseIntcode;
 

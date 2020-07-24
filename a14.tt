@@ -1,4 +1,4 @@
-import 'lib/hash'
+include 'lib/hash'
 
 composer parseReaction
   { ingredients: [ <ingredient>+ ], (<' => '>) result: <chemical> }

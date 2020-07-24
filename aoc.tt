@@ -1,5 +1,3 @@
-package aoc
-
 composer parseIntcode
   [ <code>+ ]
   rule code: <INT> (<','>?)

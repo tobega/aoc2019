@@ -1,4 +1,4 @@
-import 'lib/math'
+include 'lib/math'
 
 composer parseInstruction
   { type: <~INT> -> \(<'.*new.*'> 'new' ! <'.*cut.*'> 'cut' ! <'.*increment.*'> 'increment' ! <> 'OOPS $;' -> !OUT::write\),

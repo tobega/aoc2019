@@ -1,6 +1,6 @@
-import 'lib/hash'
-import 'lib/list'
-import 'lib/math'
+include 'lib/hash'
+include 'lib/list'
+include 'lib/math'
 
 composer parsePosition
   { (<'<x='>) x: <INT>, (<', y='>) y: <INT>, (<', z='>) z: <INT> (<'>'>) }

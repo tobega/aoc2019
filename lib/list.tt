@@ -1,5 +1,3 @@
-package list
-
 templates max
   <[](0)> !VOID
   <> @: $(1); $(2..last)... -> \(<$@max~..> @max: $;\) -> !VOID

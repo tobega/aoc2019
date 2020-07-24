@@ -1,5 +1,3 @@
-package combinatorics
-
 templates lexicalPermutations
   <=1> [1] !
   <>

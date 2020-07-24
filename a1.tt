@@ -1,4 +1,4 @@
-import 'lib/list'
+include 'lib/list'
 
 composer readWeight
   <INT>

@@ -1,6 +1,6 @@
-import 'lib/hash'
-import 'lib/math'
-import 'lib/list'
+include 'lib/hash'
+include 'lib/math'
+include 'lib/list'
 
 composer wire
   [ <wiring>+ ]

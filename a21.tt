@@ -1,4 +1,4 @@
-import 'aoc'
+include 'aoc'
 
 def springdroid: $IN::lines -> aoc/parseIntcode;
 

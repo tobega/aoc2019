@@ -1,5 +1,5 @@
-import 'lib/list'
-import 'lib/math'
+include 'lib/list'
+include 'lib/math'
 
 def baseFFT: [ 0, 1, 0, -1 ];
 

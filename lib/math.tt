@@ -1,5 +1,3 @@
-package math
-
 templates abs
   <0..> $ !
   <..0> -$ !
