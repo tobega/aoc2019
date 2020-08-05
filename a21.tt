@@ -12,7 +12,7 @@ AND D J
 WALK
 ';
 
-def bot: $springdroid -> aoc/MarkII@{cooperativeThreading: 0};
+def bot: $springdroid -> aoc/MarkII&{cooperativeThreading: 0};
 [[] -> bot::proceed -> $.out ] -> '$... -> '$#$;';' -> !OUT::write
 $control -> !OUT::write
 
@@ -33,7 +33,7 @@ AND D J
 RUN
 ';
 
-def bot2: $springdroid -> aoc/MarkII@{cooperativeThreading: 0};
+def bot2: $springdroid -> aoc/MarkII&{cooperativeThreading: 0};
 [[] -> bot2::proceed -> $.out ] -> '$... -> '$#$;';' -> !OUT::write
 $control2 -> !OUT::write
 

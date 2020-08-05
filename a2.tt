@@ -3,11 +3,11 @@ include 'aoc'
 // def program: [ 1,9,10,3,2,3,11,0,99,30,40,50 ];
 def program: $IN::lines -> aoc/parseIntcode;
 
-// $program -> aoc/compute@{inputs:[]} -> !OUT::write
+// $program -> aoc/compute&{inputs:[]} -> !OUT::write
 
 def state1202: [ $program(1), 12, 2, $program(4..last)...];
 
-$state1202 -> aoc/compute@{inputs:[]} -> !OUT::write
+$state1202 -> aoc/compute&{inputs:[]} -> !OUT::write
 
 '
 ' -> !OUT::write
@@ -15,6 +15,6 @@ $state1202 -> aoc/compute@{inputs:[]} -> !OUT::write
 0..99 -> \(def noun: $;
   0..99 -> \(def verb: $;
     def state: [ $program(1), $noun, $verb, $program(4..last)...];
-    $state -> aoc/compute@{inputs:[]} -> \(when <=19690720> do 1! \) -> 100 * $noun + $verb !
+    $state -> aoc/compute&{inputs:[]} -> \(when <=19690720> do 1! \) -> 100 * $noun + $verb !
   \) !
 \) -> !OUT::write

@@ -6,11 +6,11 @@ end orbit
 
 def orbitMap: [ $IN::lines -> orbit ];
 
-templates allOrbits@{map:}
+templates allOrbits&{map:}
   @: [];
   [ {orbitter: $, orbits:[]} ] -> #
   when <[](0)> do $@ !
-  when <> do
+  otherwise
     def next: $(1);
     ..|@: $next;
     def orbits: [ $next.orbits..., $next.orbitter ];
@@ -19,7 +19,7 @@ templates allOrbits@{map:}
         -> { orbitter: $(2), orbits: $orbits} ] -> #
 end allOrbits
 
-def aroundCOM: 'COM' -> allOrbits@{map: $orbitMap};
+def aroundCOM: 'COM' -> allOrbits&{map: $orbitMap};
 
 [ $aroundCOM... -> $.orbits::length ] -> list/sum -> !OUT::write
 '

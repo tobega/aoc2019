@@ -3,8 +3,8 @@ composer parseIntcode
   rule code: <INT> (<','>?)
 end parseIntcode
 
-templates compute@{inputs:}
-  def machine: $ -> MarkII@{cooperativeThreading: 0};
+templates compute&{inputs:}
+  def machine: $ -> MarkII&{cooperativeThreading: 0};
   $inputs -> machine::proceed -> #
   <{ status: <='end'> }> $.out !
   <{ out: <=0> }> !VOID // ignore passing diagnostic test
@@ -12,17 +12,17 @@ templates compute@{inputs:}
 end compute
 
 templates run
-  def machine: $ -> MarkII@{cooperativeThreading: 0};
+  def machine: $ -> MarkII&{cooperativeThreading: 0};
   [[] -> machine::proceed -> $.out ] !
 end run
 
-processor MarkII@{cooperativeThreading:}
+processor MarkII&{cooperativeThreading:}
   @: { memory: $, base: 0, position: 1, input:[] };
 
   templates opcode
     $@MarkII.memory($) mod 100 !
   end opcode
-  templates paramAddress@{n:}
+  templates paramAddress&{n:}
     templates checkMem
       $@MarkII.memory::length + 1..$ -> ..|@MarkII.memory: 0;
       $ !
@@ -48,13 +48,13 @@ processor MarkII@{cooperativeThreading:}
         { out: $@MarkII.memory(1), status: 'end' } !
 
       <?($ -> opcode <=1>)>
-        def paramAddress: $ -> paramAddress@{n: 3};
+        def paramAddress: $ -> paramAddress&{n: 3};
         def result: $paramAddress(3);
         @MarkII.memory($result): $@MarkII.memory($paramAddress(1)) + $@MarkII.memory($paramAddress(2));
         $ + 4 -> #
 
       <?($ -> opcode <=2>)>
-        def paramAddress: $ -> paramAddress@{n: 3};
+        def paramAddress: $ -> paramAddress&{n: 3};
         def result: $paramAddress(3);
         @MarkII.memory($result): $@MarkII.memory($paramAddress(1)) * $@MarkII.memory($paramAddress(2));
         $ + 4 -> #
@@ -65,41 +65,41 @@ processor MarkII@{cooperativeThreading:}
         '>' -> \(<?($cooperativeThreading <=1>)> $ !\) -> $!
 
       <?($ -> opcode <=3>)>
-        def paramAddress: $ -> paramAddress@{n: 1};
+        def paramAddress: $ -> paramAddress&{n: 1};
         def result: $paramAddress(1);
         @MarkII.memory($result): ^@MarkII.input(1);
         $ + 2 -> #
 
       <?($ -> opcode <=4>)?($ + 2 -> opcode <=99>)>
         @MarkII.position: 0;
-        $ -> paramAddress@{n: 1} -> $@MarkII.memory($(1)) -> { out: $, status: 'end' } !
+        $ -> paramAddress&{n: 1} -> $@MarkII.memory($(1)) -> { out: $, status: 'end' } !
 
       <?($ -> opcode <=4>)>
-        { position: $, out: $ -> paramAddress@{n: 1} -> $@MarkII.memory($(1)) } !
+        { position: $, out: $ -> paramAddress&{n: 1} -> $@MarkII.memory($(1)) } !
         $ + 2 -> \(<?($cooperativeThreading <=0>)> $ ! <> @MarkII.position: $;\) -> #
 
       <?($ -> opcode <=5>)>
-        def params: $ -> paramAddress@{n: 2} -> [$... -> $@MarkII.memory($)];
+        def params: $ -> paramAddress&{n: 2} -> [$... -> $@MarkII.memory($)];
         $ + 3 -> \(<?($params(1) <~=0>)> $params(2) + 1 ! <> $ ! \) -> #
 
       <?($ -> opcode <=6>)>
-        def params: $ -> paramAddress@{n: 2} -> [$... -> $@MarkII.memory($)];
+        def params: $ -> paramAddress&{n: 2} -> [$... -> $@MarkII.memory($)];
         $ + 3 -> \(<?($params(1) <=0>)> $params(2) + 1 ! <> $ ! \) -> #
 
       <?($ -> opcode <=7>)>
-        def paramAddress: $ -> paramAddress@{n: 3};
+        def paramAddress: $ -> paramAddress&{n: 3};
         def result: $paramAddress(3);
         @MarkII.memory($result): $@MarkII.memory($paramAddress(1)) -> \(<..~$@MarkII.memory($paramAddress(2))> 1 ! <> 0 !\);
         $ + 4 -> #
 
       <?($ -> opcode <=8>)>
-        def paramAddress: $ -> paramAddress@{n: 3};
+        def paramAddress: $ -> paramAddress&{n: 3};
         def result: $paramAddress(3);
         @MarkII.memory($result): $@MarkII.memory($paramAddress(1)) -> \(<=$@MarkII.memory($paramAddress(2))> 1 ! <> 0 !\);
         $ + 4 -> #
 
       <?($ -> opcode <=9>)>
-        def paramAddress: $ -> paramAddress@{n: 1};
+        def paramAddress: $ -> paramAddress&{n: 1};
         @MarkII.base: $@MarkII.base + $@MarkII.memory($paramAddress(1));
         $ + 2 -> #
 

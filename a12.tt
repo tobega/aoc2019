@@ -34,14 +34,14 @@ templates step
     \updatePosition) !
 end step
 
-templates moonTime@{increase:}
+templates moonTime&{increase:}
   @: $;
   1..$increase ->  @: $@ -> step;
   $@ !
 end moonTime
 
 // part 1
-def moonsAt1000: $moonsAtStart -> moonTime@{increase: 1000};
+def moonsAt1000: $moonsAtStart -> moonTime&{increase: 1000};
 [ $moonsAt1000... -> [ $.position -> absSum, $.velocity -> absSum ] -> $(1) * $(2) ] -> list/sum -> !OUT::write
 
 '
@@ -75,7 +75,7 @@ templates factorize
     @: $;
     @factorize: $@factorize -> \[i](
       def this: $;
-      {a: $, b:$@newFactor} -> math/gcd -> #
+      $math/gcd&{a: $, b:$@newFactor} -> #
       when <=1> do $this !
       when <=$this> do $ ! @newFactor: $@newFactor ~/ $;
       when <> do $ ! $this ~/ $ ! @newFactor: $@newFactor ~/ $;

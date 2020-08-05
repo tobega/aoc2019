@@ -8,7 +8,7 @@ end parseReaction
 
 def reactionMap: [ $IN::lines -> parseReaction -> { key: $.result.name, value: $ } ] -> hash/Map;
 
-templates convertToIngredients@{stock:, need:}
+templates convertToIngredients&{stock:, need:}
       when <~'ORE'> do
         def reaction: $ -> reactionMap::get;
         def amountNeeded: $ -> need::remove;
@@ -30,18 +30,18 @@ templates convertToIngredients@{stock:, need:}
         { key: $, value: $reactionsNeeded * $reaction.result.amount - $amountNeeded } -> stock::put -> !VOID
 end convertToIngredients
 
-templates calculateOreForFuel@{stock:}
+templates calculateOreForFuel&{stock:}
   def need: [{ key: 'FUEL', value: $ }] -> hash/Map;
   [$need::entries -> $.key] -> #
 
   when <=['ORE']> do 'ORE' -> need::get !
 
-  otherwise $... -> convertToIngredients@{stock: $stock, need: $need } -> !VOID
+  otherwise $... -> convertToIngredients&{stock: $stock, need: $need } -> !VOID
     [$need::entries -> $.key] -> #
 end calculateOreForFuel
 
 // part 1
-def oreForOneFuel: 1 -> calculateOreForFuel@{stock: [] -> hash/Map};
+def oreForOneFuel: 1 -> calculateOreForFuel&{stock: [] -> hash/Map};
 '$oreForOneFuel;
 ' -> !OUT::write
 
@@ -57,11 +57,11 @@ source calculateFuelFromTrillion
     def remaining: $;
     def fuelToMake: $ ~/ $oreForOneFuel;
     @: $@ + $fuelToMake;
-    $fuelToMake -> calculateOreForFuel@{stock: $stock} -> $remaining - $ -> #
+    $fuelToMake -> calculateOreForFuel&{stock: $stock} -> $remaining - $ -> #
 
   otherwise
     def remaining: $;
-    1 -> calculateOreForFuel@{stock: $stock} ->
+    1 -> calculateOreForFuel&{stock: $stock} ->
       \(when <..$remaining> do @calculateFuelFromTrillion: $@calculateFuelFromTrillion + 1; $remaining - $ ! \) -> #
 end calculateFuelFromTrillion
 

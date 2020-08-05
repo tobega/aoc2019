@@ -2,13 +2,13 @@ composer toInt
   <INT>
 end toInt
 
-composer decodeSpaceImageFormat@{width:, height:}
+composer decodeSpaceImageFormat&{width:, height:}
   [ <layer>+ ]
   rule layer: [ <row>=$height ]
   rule row: [ <'.'>=$width -> toInt ]
 end decodeSpaceImageFormat
 
-def message: $IN::lines -> decodeSpaceImageFormat@{width:25, height:6}; // only expect one line
+def message: $IN::lines -> decodeSpaceImageFormat&{width:25, height:6}; // only expect one line
 
 templates part1
   templates spectrum

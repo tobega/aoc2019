@@ -8,7 +8,7 @@ templates thrusters
   @: $;
   0 -> #
   when <?($@ <=[]>)> do $ !
-  when <> do def val: $; $amplifierControllerSoftware -> aoc/compute@{inputs: [^@(1), $val]} -> #
+  when <> do def val: $; $amplifierControllerSoftware -> aoc/compute&{inputs: [^@(1), $val]} -> #
 end thrusters
 
 def valueSet: [ 0..4 ];
@@ -18,7 +18,7 @@ def valueSet: [ 0..4 ];
 ' -> !OUT::write
 
 templates feedbackMachines
-  @: [1..$::length -> $amplifierControllerSoftware -> aoc/MarkII@{cooperativeThreading: 0} ];
+  @: [1..$::length -> $amplifierControllerSoftware -> aoc/MarkII&{cooperativeThreading: 0} ];
   $ -> \[i]($ -> @feedbackMachines($i)::proceed ! \) -> \(when <~[](0)> do 'WTF! $;' ! \) -> !OUT::write
   { out: 0, to: 1 } -> #
 

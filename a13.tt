@@ -5,7 +5,7 @@ include 'lib/math'
 def game: $IN::lines -> aoc/parseIntcode;
 
 templates arcadeCabinet
-  def engine: $ -> aoc/MarkII@{cooperativeThreading: 1};
+  def engine: $ -> aoc/MarkII&{cooperativeThreading: 1};
   @: { screen: [], output: [], done: 0 };
   [] -> engine::proceed -> #
   '$@.screen... -> '$... -> \(<=0> ' '! <=1> '█'! <=2> '░'! <=3> '_'! <=4> '*'!\);$#10;';$#10;' -> !OUT::write
@@ -36,7 +36,7 @@ $game -> arcadeCabinet -> list/flatten -> [ $... -> \(<=2> $ !\) ] -> $::length 
 
 templates botPlayer
   @: { ballX: -1, paddleX: -1, score: -1, output: [], done: 0 };
-  def engine: [2, $(2..last)...] -> aoc/MarkII@{cooperativeThreading: 1};
+  def engine: [2, $(2..last)...] -> aoc/MarkII&{cooperativeThreading: 1};
   [] -> engine::proceed -> #
   $@.score !
   when <='>'> do

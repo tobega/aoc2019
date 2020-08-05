@@ -11,7 +11,7 @@ def keys: [ $keyPositions... ->  $.key ];
 
 def doors: [ $map -> \[i;j](<'\p{Upper}'> $ !\) ... ...];
 
-templates calculateDistances@{map:}
+templates calculateDistances&{map:}
   def directions: [ { dRow: 0, dCol: -1}, { dRow: 0, dCol: 1}, { dRow: -1, dCol: 0}, { dRow: 1, dCol: 0}];
   @: { map: $map, next: [], current: [{at: $, distance: 0, doors: [], others: []}], found: [] -> hash/Map};
   @.map($.row;$.col): '#';
@@ -56,7 +56,7 @@ end calculateDistances
 processor DistanceTable
   @: [] -> hash/Map;
 
-  sink add@{from:}
+  sink add&{from:}
     def entry: { key: { from: $from, to : $.key}, value: $.value};
     $entry -> @DistanceTable::put -> 'Error: duplicate key for $;$#10;' -> !OUT::write
   end add
@@ -104,9 +104,9 @@ end DistanceTable
 
 def distanceTable: $DistanceTable;
 
-$start -> calculateDistances@{map: $map} -> $::entries -> !distanceTable::add@{from: '@'}
+$start -> calculateDistances&{map: $map} -> $::entries -> !distanceTable::add&{from: '@'}
 $keyPositions... -> \( def from: $.key;
-  $ -> calculateDistances@{map: $map} -> $::entries -> !distanceTable::add@{from: $from}
+  $ -> calculateDistances&{map: $map} -> $::entries -> !distanceTable::add&{from: $from}
 \) -> !VOID
 
 templates shuffle
@@ -114,7 +114,7 @@ templates shuffle
   [ 1..$::length -> \($@shuffle::length -> SYS::randomInt -> ^@shuffle($+1) !\) ] !
 end shuffle
 
-source geneSoup@{popSize:, genes:, valueFn:}
+source geneSoup&{popSize:, genes:, valueFn:}
   source createCell
     def values: [ $... -> valueFn ];
     $ -> \[i](<?($values($i) <..$@geneSoup.best>)> @geneSoup.best: $values($i); @geneSoup.bestGene: $;\) -> !VOID
@@ -196,7 +196,7 @@ source geneSoup@{popSize:, genes:, valueFn:}
 end geneSoup
 
 // part 1
-//'The best path is $geneSoup@{popSize: 1000, genes:$keys, valueFn: distanceTable::pathLength};
+//'The best path is $geneSoup&{popSize: 1000, genes:$keys, valueFn: distanceTable::pathLength};
 //' -> !OUT::write
 
 // part 2
@@ -216,13 +216,13 @@ def newMap: $map -> \[i;j](
 
 def newTable: $DistanceTable;
 
-{row: $start.row-1, col: $start.col-1} -> calculateDistances@{map: $newMap} -> $::entries -> !newTable::add@{from: '1'}
-{row: $start.row-1, col: $start.col+1} -> calculateDistances@{map: $newMap} -> $::entries -> !newTable::add@{from: '2'}
-{row: $start.row+1, col: $start.col-1} -> calculateDistances@{map: $newMap} -> $::entries -> !newTable::add@{from: '3'}
-{row: $start.row+1, col: $start.col+1} -> calculateDistances@{map: $newMap} -> $::entries -> !newTable::add@{from: '4'}
+{row: $start.row-1, col: $start.col-1} -> calculateDistances&{map: $newMap} -> $::entries -> !newTable::add&{from: '1'}
+{row: $start.row-1, col: $start.col+1} -> calculateDistances&{map: $newMap} -> $::entries -> !newTable::add&{from: '2'}
+{row: $start.row+1, col: $start.col-1} -> calculateDistances&{map: $newMap} -> $::entries -> !newTable::add&{from: '3'}
+{row: $start.row+1, col: $start.col+1} -> calculateDistances&{map: $newMap} -> $::entries -> !newTable::add&{from: '4'}
 $keyPositions... -> \( def from: $.key;
-  $ -> calculateDistances@{map: $newMap} -> $::entries -> !newTable::add@{from: $from}
+  $ -> calculateDistances&{map: $newMap} -> $::entries -> !newTable::add&{from: $from}
 \) -> !VOID
 
-'With four bots, the best path is $geneSoup@{popSize: 1000, genes:$keys, valueFn: newTable::fourBotPathLength};
+'With four bots, the best path is $geneSoup&{popSize: 1000, genes:$keys, valueFn: newTable::fourBotPathLength};
 ' -> !OUT::write

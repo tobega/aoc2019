@@ -2,7 +2,7 @@ include 'aoc'
 
 def boostProgram: $IN::lines -> aoc/parseIntcode;
 
-$boostProgram -> aoc/compute@{inputs: [1]} -> !OUT::write
+$boostProgram -> aoc/compute&{inputs: [1]} -> !OUT::write
 '
 ' -> !OUT::write
-$boostProgram -> aoc/compute@{inputs: [2]} -> !OUT::write
+$boostProgram -> aoc/compute&{inputs: [2]} -> !OUT::write

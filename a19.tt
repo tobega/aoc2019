@@ -4,7 +4,7 @@ include 'lib/list'
 def droneSystem: $IN::lines -> aoc/parseIntcode;
 
 templates check
-    def droneControl: $droneSystem -> aoc/MarkII@{cooperativeThreading: 1};
+    def droneControl: $droneSystem -> aoc/MarkII&{cooperativeThreading: 1};
     $ -> droneControl::proceed -> $.out !
 end check
 

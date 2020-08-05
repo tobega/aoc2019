@@ -13,34 +13,35 @@ templates manhattanDistance
   @: 0;
   $ -> #
   $@ !
-  <[]> $... -> #
-  <{}> $... -> $::value -> #
-  <0..> @: $@ + $;
-  <..0> @: $@ - $;
+  when <[]> do $... -> #
+  when <{}> do $... -> $::value -> #
+  when <0..> do @: $@ + $;
+  when <..0> do @: $@ - $;
 end manhattanDistance
 
-templates gcd
-  <{a: <=0>}> $.b -> abs !
-  <{b: <=0>}> $.a -> abs !
-  <{a: <..~0>}|{b: <..~0>}> { a: $.a -> abs, b: $.b -> abs } -> #
+source gcd&{a:, b:}
+  { a: $a -> abs, b: $b -> abs } -> #
+  <{a: <=0>}> $.b !
+  <{b: <=0>}> $.a !
   <{a:<=1>}|{b:<=1>}> 1 !
   <{a:<..$.b>, b:<>}> { a: $.a, b: $.b mod $.a } -> #
   <{a:<>, b:<>}> { a: $.b, b: $.a mod $.b } -> #
 end gcd
 
-templates extendedGcd
-  <{a: <=0>}> { x: 0, y: 1, gcd: $.b } !
-  <> def q: $.b ~/ $.a;
-    { a: $.b - $q * $.a, b: $.a } -> extendedGcd -> { x: $.y - $q * $.x, y: $.x, gcd: $.gcd } !
+source extendedGcd&{a:, b:}
+  $a -> #
+  <=0> { x: 0, y: 1, gcd: $b } !
+  <> def q: $b ~/ $a;
+    $extendedGcd&{ a: $b - $q * $a, b: $a } -> { x: $.y - $q * $.x, y: $.x, gcd: $.gcd } !
 end extendedGcd
 
 test 'extended gcd'
-  assert {a: 11, b: 26} -> extendedGcd -> $.x * 11 + $.y * 26 <=1> 'should be 1'
+  assert  $extendedGcd&{a: 11, b: 26} -> $.x * 11 + $.y * 26 <=1> 'should be 1'
 
-  assert {a: 5, b: 11} -> extendedGcd -> $.x mod 11 <=9> 'should be 9'
+  assert $extendedGcd&{a: 5, b: 11} -> $.x mod 11 <=9> 'should be 9'
 end 'extended gcd'
 
-templates mulMod@{mod:}
+templates mulMod&{mod:}
   @: { result: 0, b: $(1) mod $mod };
   $(2) mod $mod -> #
   <=0> $@.result !
@@ -50,18 +51,18 @@ templates mulMod@{mod:}
     $ ~/ 2 -> #
 end mulMod
 
-templates powerMod@{mod:}
+templates powerMod&{mod:}
   @: { result: 1, b: $(1) };
   $(2) mod ($mod - 1) -> #
   <=0> $@.result !
   <>
-    $ -> \(<?($ mod 2 <=1>)> @powerMod.result: [$@powerMod.result, $@powerMod.b] -> mulMod@{mod:$mod};\) -> !VOID
-    @.b: [$@.b, $@.b] -> mulMod@{mod:$mod};
+    $ -> \(<?($ mod 2 <=1>)> @powerMod.result: [$@powerMod.result, $@powerMod.b] -> mulMod&{mod:$mod};\) -> !VOID
+    @.b: [$@.b, $@.b] -> mulMod&{mod:$mod};
     $ ~/ 2 -> #
 end powerMod
 
 test 'power modulo'
-  assert [5, 10] -> powerMod@{mod: 11} <=1> 'should be 1'
+  assert [5, 10] -> powerMod&{mod: 11} <=1> 'should be 1'
 
-  assert [5, 6] -> powerMod@{mod: 11} <=5> 'should be 5'
+  assert [5, 6] -> powerMod&{mod: 11} <=5> 'should be 5'
 end 'power modulo'
