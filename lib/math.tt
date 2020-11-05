@@ -41,9 +41,9 @@ test 'extended gcd'
   assert $extendedGcd&{a: 5, b: 11} -> $.x mod 11 <=9> 'should be 9'
 end 'extended gcd'
 
-templates mulMod&{mod:}
-  @: { result: 0, b: $(1) mod $mod };
-  $(2) mod $mod -> #
+operator (m mulMod&{mod:} n)
+  @: { result: 0, b: $m mod $mod };
+  $n mod $mod -> #
   <=0> $@.result !
   <>
     $ -> \(<?($ mod 2 <=1>)> @mulMod.result: ($@mulMod.result + $@mulMod.b) mod $mod;\) -> !VOID
@@ -51,18 +51,18 @@ templates mulMod&{mod:}
     $ ~/ 2 -> #
 end mulMod
 
-templates powerMod&{mod:}
-  @: { result: 1, b: $(1) };
-  $(2) mod ($mod - 1) -> #
+operator (m powerMod&{mod:} n)
+  @: { result: 1, b: $m };
+  $n mod ($mod - 1) -> #
   <=0> $@.result !
   <>
-    $ -> \(<?($ mod 2 <=1>)> @powerMod.result: [$@powerMod.result, $@powerMod.b] -> mulMod&{mod:$mod};\) -> !VOID
-    @.b: [$@.b, $@.b] -> mulMod&{mod:$mod};
+    $ -> \(<?($ mod 2 <=1>)> @powerMod.result: ($@powerMod.result mulMod&{mod:$mod} $@powerMod.b);\) -> !VOID
+    @.b: ($@.b mulMod&{mod:$mod} $@.b);
     $ ~/ 2 -> #
 end powerMod
 
 test 'power modulo'
-  assert [5, 10] -> powerMod&{mod: 11} <=1> 'should be 1'
+  assert (5 powerMod&{mod: 11} 10) <=1> 'should be 1'
 
-  assert [5, 6] -> powerMod&{mod: 11} <=5> 'should be 5'
+  assert (5 powerMod&{mod: 11} 6) <=5> 'should be 5'
 end 'power modulo'
