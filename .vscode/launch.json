@@ -8,9 +8,8 @@
             "type": "java",
             "name": "Tailspin",
             "request": "launch",
+            "classPaths": ["/Users/tobe/tobega/tailspin-v0/tailspin.jar"],
             "mainClass": "tailspin.Tailspin",
-            "classPaths": ["../tailspin-v0/tailspin.jar",
-                 "../tailspin-v0/lib/antlr-runtime-4.8.jar"],
             "args": "a22.tt < a22in.txt"
         },
         {

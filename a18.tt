@@ -12,6 +12,7 @@ def keys: [ $keyPositions... ->  $.key ];
 def doors: [ $map -> \[i;j](<'\p{Upper}'> $ !\) ... ...];
 
 templates calculateDistances&{map:}
+  data key, value, at <{col: <col>, row: <row>}> local
   def directions: [ { dRow: 0, dCol: -1}, { dRow: 0, dCol: 1}, { dRow: -1, dCol: 0}, { dRow: 1, dCol: 0}];
   @: { map: $map, next: [], current: [{at: $, distance: 0, doors: [], others: []}], found: [] -> hash/Map};
   @.map($.row;$.col): '#';
@@ -54,6 +55,7 @@ templates calculateDistances&{map:}
 end calculateDistances
 
 processor DistanceTable
+  data key, value local
   @: [] -> hash/Map;
 
   sink add&{from:}
@@ -62,6 +64,7 @@ processor DistanceTable
   end add
 
   templates pathLength
+    data at local
     def path: $;
     @: {at: '@', length: 0};
     1..$path::length -> #
@@ -80,6 +83,7 @@ processor DistanceTable
   end pathLength
 
   templates fourBotPathLength
+    data at local
     def path: $;
     @: {at: ['1', '2', '3', '4'], length: 0};
     1..$path::length -> #
@@ -150,8 +154,7 @@ source geneSoup&{popSize:, genes:, valueFn:}
     [1..3 -> $@geneSoup.pop::length -> SYS::randomInt -> $@geneSoup.pop($+1).value ] -> #
     $@!
     
-    // check if all equal, actually it is not an array containing anything different than best
-    <~[<~=$@geneSoup.best>]> @: 1;
+    <[<=$@geneSoup.best>+ VOID]> @: 1;
       'Stagnated at $(1);$#10;' -> !OUT::write
   end isStagnated
 
@@ -196,8 +199,8 @@ source geneSoup&{popSize:, genes:, valueFn:}
 end geneSoup
 
 // part 1
-//'The best path is $geneSoup&{popSize: 1000, genes:$keys, valueFn: distanceTable::pathLength};
-//' -> !OUT::write
+'The best path is $geneSoup&{popSize: 200, genes:$keys, valueFn: distanceTable::pathLength};
+' -> !OUT::write
 
 // part 2
 def newMap: $map -> \[i;j](
@@ -224,5 +227,5 @@ $keyPositions... -> \( def from: $.key;
   $ -> calculateDistances&{map: $newMap} -> $::entries -> !newTable::add&{from: $from}
 \) -> !VOID
 
-'With four bots, the best path is $geneSoup&{popSize: 1000, genes:$keys, valueFn: newTable::fourBotPathLength};
+'With four bots, the best path is $geneSoup&{popSize: 200, genes:$keys, valueFn: newTable::fourBotPathLength};
 ' -> !OUT::write

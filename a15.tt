@@ -39,8 +39,9 @@ def directions: [ { move: 1, dX: 0, dY: -1}, { move: 2, dX: 0, dY: 1}, { move: 3
     otherwise $@.steps !
   end findClosest
 
-// stereotype coordinates <{ x: <number>, y: <number> }>
-// stereotype corridorMap <{map: <[](1..;1..)>, offset: <coordinates>, bot: <coordinates>, oxygenSystem: <coordinates>}
+data coordinates <{ x: <..0|0..>, y: <..0|0..> }>
+data corridorMap <{map: <[](1.. //;1..
+  )>, offset: <coordinates>, bot: <coordinates>, oxygenSystem: <={}|coordinates>}>
 templates botExplore&{mode:}
   sink extendMapX
     when <=1> do
@@ -62,19 +63,20 @@ templates botExplore&{mode:}
 // which then exits botExplore
   source getNextMove
     1 -> #
-    $@botExplore.currentPath -> \(<[]> $(1)! \) !
+    $@botExplore.currentPath -> \(<[](1..)> $(1)! \) !
 
     when <?($@botExplore.currentPath <[](1..)>)> do !VOID
     when <?($@botExplore.oxygenSystem <=$@botExplore.bot>) ?($mode <='find'>)> do
       // find a potential shortest path back to bot start
-      @botExplore.currentPath: 'B' -> findClosest&{map: $@botExplore.map, offset: $@botExplore.offset, from: $@botExplore.bot};
-      ..|@botExplore: (solution: $@botExplore.currentPath);
+      'B' -> findClosest&{map: $@botExplore.map, offset: $@botExplore.offset, from: $@botExplore.bot}
+          -> ..|@botExplore: {solution: $, currentPath: $};
     when <?($@botExplore.oxygenSystem <{x:<>}>) ?($mode <='find'>)> do
       // go back to oxygen system and find a new shortest path
-      @botExplore.currentPath: 'O' -> findClosest&{map: $@botExplore.map, offset: $@botExplore.offset, from: $@botExplore.bot};
+      'O' -> findClosest&{map: $@botExplore.map, offset: $@botExplore.offset, from: $@botExplore.bot} -> @botExplore.currentPath: $;
     otherwise
       // Just find the closest unexplored square
-      @botExplore.currentPath: '?' -> findClosest&{map: $@botExplore.map, offset: $@botExplore.offset, from: $@botExplore.bot};
+      '?' -> findClosest&{map: $@botExplore.map, offset: $@botExplore.offset, from: $@botExplore.bot}
+        -> \(<[]> $! \) -> @botExplore.currentPath: $;
   end getNextMove
 
   @: { map: [['?', '?', '?'], ['?', 'B', '?'], ['?', '?', '?']],

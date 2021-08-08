@@ -5,7 +5,7 @@ include 'lib/list'
 def map: [ $IN::lines -> [ $... ] ];
 
 source maxAsteroidsDetectable
-  @: { asteroids: 0 };
+  @: { asteroidCount: 0 };
   $map -> \location[j; i](
     <='#'>
       @: 0;
@@ -22,7 +22,7 @@ source maxAsteroidsDetectable
                    { dx: $.dx ~/ $gcd, dy: $.dy ~/ $gcd } !
                \) -> linesOfSight::add -> @location: $@location + $;
        \eachAsteroid) -> !VOID
-       $@ -> \(when <$@maxAsteroidsDetectable.asteroids..> do @maxAsteroidsDetectable: { asteroids: $, x: $i, y: $j }; \) -> !VOID
+       $@ -> \(when <$@maxAsteroidsDetectable.asteroidCount..> do @maxAsteroidsDetectable: { asteroidCount: $, x: $i, y: $j }; \) -> !VOID
   \location) -> !VOID
   $@ !
 end maxAsteroidsDetectable

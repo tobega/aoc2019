@@ -1,5 +1,8 @@
 include 'lib/hash'
 
+data key <>
+data value <>
+
 composer parseReaction
   { ingredients: [ <ingredient>+ ], (<' => '>) result: <chemical> }
   rule chemical: { amount: <INT>, (<WS>) name: <~'[\s,]'> }
