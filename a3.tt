@@ -4,7 +4,7 @@ include 'lib/list'
 
 composer wire
   [ <wiring>+ ]
-  rule wiring: { direction: <'[U,D,L,R]'>, distance: <INT> } (<','>?)
+  rule wiring: { direction: <'[U,D,L,R]'>, distance: <"1"> } (<','>?)
 end wire
 
 //def wires: [ 'R8,U5,L5,D3' -> wire, 'U7,R6,D4,L4' -> wire ];
@@ -12,23 +12,23 @@ end wire
 def wires: [$IN::lines -> wire];
 
 templates mapWirePositions
-  @: {x: 0, y: 0};
+  @: {x: 0"1", y: 0"1"};
   $... -> #
 
   when <{direction: <='U'>}> do
-    1..$.distance -> { x: $@.x, y: $@.y + $ } !
+    1"1"..$.distance -> { x: $@.x, y: $@.y + $ } !
     (y: $@.y + $.distance) -> ..|@: $;
 
   when <{direction: <='D'>}> do
-    1..$.distance -> { x: $@.x, y: $@.y - $ } !
+    1"1"..$.distance -> { x: $@.x, y: $@.y - $ } !
     (y: $@.y - $.distance) -> ..|@: $;
 
   when <{direction: <='L'>}> do
-    1..$.distance -> { x: $@.x - $, y: $@.y } !
+    1"1"..$.distance -> { x: $@.x - $, y: $@.y } !
     (x: $@.x - $.distance) -> ..|@: $;
 
   when <{direction: <='R'>}> do
-    1..$.distance -> { x: $@.x + $, y: $@.y } !
+    1"1"..$.distance -> { x: $@.x + $, y: $@.y } !
     (x: $@.x + $.distance) -> ..|@: $;
 end mapWirePositions
 
@@ -43,8 +43,8 @@ $wires(1) -> mapWirePositions -> wire1::add -> !VOID
 ' -> !OUT::write
 
 //part 2
-def wire1Steps: [] -> hash/Map;
+def wire1Steps: [] -> hash/Map&{key: :(coordinate:), value: :(segment:)};
 // The double put replaces the first value in case of multiples
-[ $wires(1) -> mapWirePositions ] -> \[i]( { key: $, value: $i } -> wire1Steps::put -> wire1Steps::put !\) -> !VOID
+[ $wires(1) -> mapWirePositions ] -> \[i]( { coordinate: $, segment: $i } -> wire1Steps::put -> wire1Steps::put !\) -> !VOID
 
-[ $wires(2) -> mapWirePositions ] -> \[i]( $ -> wire1Steps::get -> $ + $i ! \) -> list/min -> !OUT::write
+[ $wires(2) -> mapWirePositions ] -> \[i]( $ -> wire1Steps::get -> $::raw + $i ! \) -> list/min -> !OUT::write

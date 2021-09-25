@@ -20,15 +20,17 @@ templates manhattanDistance
 end manhattanDistance
 
 source gcd&{a:, b:}
+  data a <"1">, b <"1"> local
   { a: $a -> abs, b: $b -> abs } -> #
-  <{a: <=0>}> $.b !
-  <{b: <=0>}> $.a !
+  <{a: <=0>}> $.b::raw !
+  <{b: <=0>}> $.a::raw !
   <{a:<=1>}|{b:<=1>}> 1 !
   <{a:<..$.b>, b:<>}> { a: $.a, b: $.b mod $.a } -> #
   <{a:<>, b:<>}> { a: $.b, b: $.a mod $.b } -> #
 end gcd
 
 source extendedGcd&{a:, b:}
+  data x <"1">, y <"1">, gcd <"1"> local
   $a -> #
   <=0> { x: 0, y: 1, gcd: $b } !
   <> def q: $b ~/ $a;
@@ -42,6 +44,7 @@ test 'extended gcd'
 end 'extended gcd'
 
 operator (m mulMod&{mod:} n)
+  data result <"1">, b <"1"> local
   @: { result: 0, b: $m mod $mod };
   $n mod $mod -> #
   <=0> $@.result !
@@ -52,6 +55,7 @@ operator (m mulMod&{mod:} n)
 end mulMod
 
 operator (m powerMod&{mod:} n)
+  data result <"1">, b <"1"> local
   @: { result: 1, b: $m };
   $n mod ($mod - 1) -> #
   <=0> $@.result !

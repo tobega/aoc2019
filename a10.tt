@@ -2,6 +2,8 @@ include 'lib/math'
 include 'lib/hash'
 include 'lib/list'
 
+data dx <"1">, dy <"1">, sin <"1">, cos<"1">
+
 def map: [ $IN::lines -> [ $... ] ];
 
 source maxAsteroidsDetectable
@@ -22,7 +24,7 @@ source maxAsteroidsDetectable
                    { dx: $.dx ~/ $gcd, dy: $.dy ~/ $gcd } !
                \) -> linesOfSight::add -> @location: $@location + $;
        \eachAsteroid) -> !VOID
-       $@ -> \(when <$@maxAsteroidsDetectable.asteroidCount..> do @maxAsteroidsDetectable: { asteroidCount: $, x: $i, y: $j }; \) -> !VOID
+       $@ -> \(when <$@maxAsteroidsDetectable.asteroidCount..> do @maxAsteroidsDetectable: { asteroidCount: $, x: ($i)"1", y: ($j)"1" }; \) -> !VOID
   \location) -> !VOID
   $@ !
 end maxAsteroidsDetectable
@@ -50,16 +52,16 @@ end processScan
 
 templates scanOrder
   when <?($(1).direction.quadrant <~=$(2).direction.quadrant>)> do
-    $(1).direction.quadrant - $(2).direction.quadrant !
+    $(1).direction.quadrant::raw - $(2).direction.quadrant::raw !
 
   when <?($(1).direction.sin * $(2).direction.cos <~=$(2).direction.sin * $(1).direction.cos>)> do
     $(1).direction.sin * $(2).direction.cos - $(2).direction.sin * $(1).direction.cos !
 
-  when <> do $(1).hops - $(2).hops !
+  when <> do $(1).hops::raw - $(2).hops::raw !
 end scanOrder
 
 templates get200thShot
-  @: { asteroids: $(2..last), shot: 1, lastShot: $(1) };
+  @: { asteroids: $(2..last), shot: 1"1", lastShot: $(1) };
   1 -> #
   when <?($@.shot <=200>)> do $@.lastShot !
 

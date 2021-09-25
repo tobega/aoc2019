@@ -8,8 +8,8 @@ templates check
     $ -> droneControl::proceed -> $.out !
 end check
 
-def beam: [ 0..49 -> \( def y: $;
-  [ 0..49 -> \( def x: $;
+def beam: [ 0"1"..49"1" -> \( def y: $;
+  [ 0"1"..49"1" -> \( def x: $;
     [ $x, $y ] -> check !
   \)] !
 \) ];
@@ -59,8 +59,8 @@ source findGoodSantaLocation
     <>
       $.min * 2 !
   end nextGuess
-  @: {min: 1000};
-  500 -> checkSanta -> #
+  @: {min: 1000"1"};
+  500"1" -> checkSanta -> #
   <{over:<>}> // too big
     ..|@:{max:$.bottom};
     $@ -> nextGuess -> checkSanta -> #

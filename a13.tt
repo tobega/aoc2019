@@ -20,8 +20,8 @@ templates arcadeCabinet
   when <[](3..)> do
     def x: 1 + ^@.output(1);
     def y: 1 + ^@.output(1);
-    $@.screen::length+1..$y -> ..|@.screen: [];
-    $@.screen($y)::length+1..$x -> ..|@.screen($y): 0;
+    ($@.screen::length+1)"1"..$y -> ..|@.screen: [];
+    ($@.screen($y)::length+1)"1"..$x -> ..|@.screen($y): 0;
     @.screen($y;$x): ^@.output(1);
     [] -> \(<?($@arcadeCabinet.done <=0>)> $ !\) -> engine::proceed -> #
   when <[]> do
@@ -35,7 +35,7 @@ $game -> arcadeCabinet -> list/flatten -> [ $... -> \(<=2> $ !\) ] -> $::length 
 ' -> !OUT::write
 
 templates botPlayer
-  @: { ballX: -1, paddleX: -1, score: -1, output: [], done: 0 };
+  @: { ballX: -1"1", paddleX: -1"1", score: -1"1", output: [], done: 0 };
   def engine: [2, $(2..last)...] -> aoc/MarkII&{cooperativeThreading: 1};
   [] -> engine::proceed -> #
   $@.score !

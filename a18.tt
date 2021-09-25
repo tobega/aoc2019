@@ -1,20 +1,22 @@
 include 'lib/hash'
 include 'lib/list'
 
+data col <"x">, row <"y">
+
 def map: [ $IN::lines -> [ $... ]];
 
-def start: $map -> \[i;j](<='@'> { row: $i, col: $j } !\) ... ...;
+def start: $map -> \[i;j](<='@'> { row: ($i)"y", col: ($j)"x" } !\) ... ...;
 
-def keyPositions: [ $map -> \[i;j](<'\p{Lower}'> { key: $, row: $i, col: $j } !\) ... ...];
+def keyPositions: [ $map -> \[i;j](<'\p{Lower}'> { key: $, row: ($i)"y", col: ($j)"x" } !\) ... ...];
 
 def keys: [ $keyPositions... ->  $.key ];
 
 def doors: [ $map -> \[i;j](<'\p{Upper}'> $ !\) ... ...];
 
 templates calculateDistances&{map:}
-  data key, value, at <{col: <col>, row: <row>}> local
-  def directions: [ { dRow: 0, dCol: -1}, { dRow: 0, dCol: 1}, { dRow: -1, dCol: 0}, { dRow: 1, dCol: 0}];
-  @: { map: $map, next: [], current: [{at: $, distance: 0, doors: [], others: []}], found: [] -> hash/Map};
+  data key, at <{col: <col>, row: <row>}> local
+  def directions: [ { dRow: 0"y", dCol: -1"x"}, { dRow: 0"y", dCol: 1"x"}, { dRow: -1"y", dCol: 0"x"}, { dRow: 1"y", dCol: 0"x"}];
+  @: { map: $map, next: [], current: [{at: $, distance: 0"steps", doors: [], others: []}], found: [] -> hash/Map&{key: :(key:), value: :(route:)}};
   @.map($.row;$.col): '#';
   1 -> #
   $@.found !
@@ -40,7 +42,7 @@ templates calculateDistances&{map:}
       -> \update( def onMap: $@calculateDistances.map($.at.row; $.at.col);
         $ -> #
         <?($keys <[<=$onMap>]>)>
-          { key: $onMap, value: {distance: $.distance, doors: $.doors, others: $.others}}
+          { key: $onMap, route: {distance: $.distance, doors: $.doors, others: $.others}}
           // re-putting the first (shortest) path, if one exists
           -> @calculateDistances.found::put -> @calculateDistances.found::put -> !VOID
         <>
@@ -55,18 +57,18 @@ templates calculateDistances&{map:}
 end calculateDistances
 
 processor DistanceTable
-  data key, value local
-  @: [] -> hash/Map;
+  data leg <{from: <key>, to: <key>}> local
+  @: [] -> hash/Map&{key: :(leg:), value: :(route:)};
 
   sink add&{from:}
-    def entry: { key: { from: $from, to : $.key}, value: $.value};
+    def entry: { leg: { from: $from, to : $.key}, route: $.route};
     $entry -> @DistanceTable::put -> 'Error: duplicate key for $;$#10;' -> !OUT::write
   end add
 
   templates pathLength
-    data at local
+    data at <key> local
     def path: $;
-    @: {at: '@', length: 0};
+    @: {at: '@', length: 0"steps"};
     1..$path::length -> #
     $@.length !
 
@@ -83,9 +85,9 @@ processor DistanceTable
   end pathLength
 
   templates fourBotPathLength
-    data at local
+    data at <[<'.'|key>=4]> local
     def path: $;
-    @: {at: ['1', '2', '3', '4'], length: 0};
+    @: {at: ['1', '2', '3', '4'], length: 0"steps"};
     1..$path::length -> #
     $@.length !
 
@@ -159,31 +161,32 @@ source geneSoup&{popSize:, genes:, valueFn:}
   end isStagnated
 
   templates mutate
+    data a <"1">, b <"1"> local
         @: $;
         1..2 -> 20 -> SYS::randomInt -> \(<=0> $!\)
         -> $genes::length -> SYS::randomInt -> $+1
         -> { a: $ -> SYS::randomInt -> $+1, b: $, which: 2 -> SYS::randomInt -> $+1 }
-        -> @.chromosome($.which): [$@.chromosome($.which;1..$.a-1), $@.chromosome($.which;$.a..$.b-1), $@.chromosome($.which;$.b..last)] -> shuffle -> list/flatten;
+        -> @.chromosome($.which): [$@.chromosome($.which;1"1"..$.a-1), $@.chromosome($.which;$.a..$.b-1), $@.chromosome($.which;$.b..last)] -> shuffle -> list/flatten;
         1..5 -> 20 -> SYS::randomInt -> \(<=0> $!\)
         -> { which: 2 -> SYS::randomInt -> $+1,
           a: $genes::length -> SYS::randomInt -> $+1,
           b: $genes::length -> SYS::randomInt -> $
         } -> \( def popped: ^@mutate.chromosome($.which; $.a);
            @mutate.chromosome($.which):
-             [$@mutate.chromosome($.which; 1..$.b)..., $popped, $@mutate.chromosome($.which; $.b+1..last)...];
+             [$@mutate.chromosome($.which; 1"1"..$.b)..., $popped, $@mutate.chromosome($.which; $.b+1..last)...];
         \) -> !VOID
         $@!
   end mutate
 
   sink enterPop
-    {tries: 5, candidate: $} -> #
+    {tries: 5"1", candidate: $} -> #
     <?($@geneSoup.pop::length <..~$popSize>)> ..|@geneSoup.pop: $.candidate -> mutate;
     <{tries: <1..>}> def toReplace: $@geneSoup.pop::length -> SYS::randomInt -> $+1;
       $ -> \(<{candidate:<{value: <..$@geneSoup.pop($toReplace).value>}>}> @geneSoup.pop($toReplace): $.candidate -> mutate;
         <> { tries: $.tries-1, candidate: $.candidate} ! \) -> #
   end enterPop
 
-  @: {count: 0, best: 99999999999, bestGene:[]};
+  @: {count: 0"1", best: 99999999999"steps", bestGene:[]};
   @.pop: [ 1..$popSize -> [ $genes -> shuffle, $genes -> shuffle ] -> createCell ];
   0 -> #
 
@@ -204,15 +207,15 @@ end geneSoup
 
 // part 2
 def newMap: $map -> \[i;j](
-  <?($i <=$start.row-1>)?($j <=$start.col-1>)> '1' !
-  <?($i <=$start.row-1>)?($j <=$start.col+1>)> '2' !
-  <?($i <=$start.row+1>)?($j <=$start.col-1>)> '3' !
-  <?($i <=$start.row+1>)?($j <=$start.col+1>)> '4' !
-  <?($i <=$start.row-1>)?($j <=$start.col>)> '#' !
-  <?($i <=$start.row+1>)?($j <=$start.col>)> '#' !
-  <?($i <=$start.row>)?($j <=$start.col-1>)> '#' !
-  <?($i <=$start.row>)?($j <=$start.col+1>)> '#' !
-  <?($i <=$start.row>)?($j <=$start.col>)> '#' !
+  <?(($i)"y" <=$start.row-1>)?(($j)"x" <=$start.col-1>)> '1' !
+  <?(($i)"y" <=$start.row-1>)?(($j)"x" <=$start.col+1>)> '2' !
+  <?(($i)"y" <=$start.row+1>)?(($j)"x" <=$start.col-1>)> '3' !
+  <?(($i)"y" <=$start.row+1>)?(($j)"x" <=$start.col+1>)> '4' !
+  <?(($i)"y" <=$start.row-1>)?(($j)"x" <=$start.col>)> '#' !
+  <?(($i)"y" <=$start.row+1>)?(($j)"x" <=$start.col>)> '#' !
+  <?(($i)"y" <=$start.row>)?(($j)"x" <=$start.col-1>)> '#' !
+  <?(($i)"y" <=$start.row>)?(($j)"x" <=$start.col+1>)> '#' !
+  <?(($i)"y" <=$start.row>)?(($j)"x" <=$start.col>)> '#' !
   <> $ !
 \);
 

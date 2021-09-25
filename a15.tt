@@ -3,14 +3,17 @@ include 'lib/hash'
 
 def botInterface: $IN::lines -> aoc/parseIntcode;
 
-def directions: [ { move: 1, dX: 0, dY: -1}, { move: 2, dX: 0, dY: 1}, { move: 3, dX: -1, dY: 0}, { move: 4, dX: 1, dY: 0}];
+def directions: [ { move: 1"1", dX: 0"1", dY: -1"1"},
+  { move: 2"1", dX: 0"1", dY: 1"1"},
+  { move: 3"1", dX: -1"1", dY: 0"1"},
+  { move: 4"1", dX: 1"1", dY: 0"1"}];
 
 // Returns the shortest path to the target, or, when failed, the maximum number of steps possible
   templates findClosest&{map:, offset:, from:}
     def target: $;
     @:{ next:[], current:[{ position: $from, path: [] }], found: [],
       visited: $map -> \[i;j](0!\),
-      steps: 0
+      steps: 0"1"
     };
     1 -> #
     when <?($@.found <[](1..)>)> do $@.found !
@@ -39,7 +42,7 @@ def directions: [ { move: 1, dX: 0, dY: -1}, { move: 2, dX: 0, dY: 1}, { move: 3
     otherwise $@.steps !
   end findClosest
 
-data coordinates <{ x: <..0|0..>, y: <..0|0..> }>
+data coordinates <{ x: <"1">, y: <"1"> }>
 data corridorMap <{map: <[](1.. //;1..
   )>, offset: <coordinates>, bot: <coordinates>, oxygenSystem: <={}|coordinates>}>
 templates botExplore&{mode:}

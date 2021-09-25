@@ -3,7 +3,7 @@ include 'lib/math'
 composer parseInstruction
   { type: <~INT> -> \(<'.*new.*'> 'new' ! <'.*cut.*'> 'cut' ! <'.*increment.*'> 'increment' ! <> 'OOPS $;' -> !OUT::write\),
     <count>? }
-  rule count: count: <INT>
+  rule count: count: <INT> -> ($)"1"
 end parseInstruction
 
 def shuffle: [ $IN::lines -> parseInstruction ];
@@ -16,9 +16,9 @@ source doShuffle
     @: $@(last..1:-1);
   when <{type: <='cut'>, count: <..0>}> do
     def cut: $@::length+1+$.count;
-    @: $@([$cut..last, 1..~$cut]);
+    @: $@([$cut..last, first..~$cut]);
   when <{type: <='cut'>, count: <0..>}> do
-    @: $@([$.count~..last, 1..$.count]);
+    @: $@([$.count~..last, first..$.count]);
   when <{type: <='increment'>}> do
     templates spread
       def increment: $;

@@ -1,6 +1,8 @@
 include 'aoc'
 include 'lib/list'
 
+data row <"r">, col <"c">, dr <"r">, dc <"c">
+
 def asciiProgram: $IN::lines -> aoc/parseIntcode;
 
 templates collectAsciiRows
@@ -53,29 +55,29 @@ $view -> \[row;col](
 
 // part 2
 def vacuumbot: $view -> \[row;col](
-   <='^'> { row: $row, col: $col, dr: -1, dc: 0} !
-   <='<'> { row: $row, col: $col, dr: 0, dc: -1} !
-   <='v'> { row: $row, col: $col, dr: 1, dc: 0} !
-   <='>'> { row: $row, col: $col, dr: 0, dc: 1} !
+   <='^'> { row: ($row)"r", col: ($col)"c", dr: -1"r", dc: 0"c"} !
+   <='<'> { row: ($row)"r", col: ($col)"c", dr: 0"r", dc: -1"c"} !
+   <='v'> { row: ($row)"r", col: ($col)"c", dr: 1"r", dc: 0"c"} !
+   <='>'> { row: ($row)"r", col: ($col)"c", dr: 0"r", dc: 1"c"} !
 \)... ...;
 
 // start with simplest, ignoring alternative paths at intersections
 templates buildPath
-  @: {path: [], move: 0};
+  @: {path: [], move: 0"1"};
   $ -> #
   <?($view($.row+$.dr..$.row+$.dr; $.col+$.dc..$.col+$.dc) <=[['#']]>)>
     @.move: $@.move+1;
     { $..., row: $.row+$.dr, col: $.col+$.dc } -> #
-  <?($view($.row+$.dc..$.row+$.dc; $.col-$.dr..$.col-$.dr) <=[['#']]>)>
+  <?($view($.row+($.dc)"r"..$.row+($.dc)"r"; $.col-($.dr)"c"..$.col-($.dr)"c") <=[['#']]>)>
     $@.move -> \(<1..> $!\) -> ..|@.path: '$;';
     @.move: 0;
     ..|@.path: 'R';
-    { $..., dr: $.dc, dc: -$.dr } -> #
-  <?($view($.row-$.dc..$.row-$.dc; $.col+$.dr..$.col+$.dr) <=[['#']]>)>
+    { $..., dr: ($.dc)"r", dc: (-$.dr)"c" } -> #
+  <?($view($.row-($.dc)"r"..$.row-($.dc)"r"; $.col+($.dr)"c"..$.col+($.dr)"c") <=[['#']]>)>
     $@.move -> \(<1..> $!\) -> ..|@.path: '$;';
     @.move: 0;
     ..|@.path: 'L';
-    { $..., dr: -$.dc, dc: $.dr } -> #
+    { $..., dr: (-$.dc)"r", dc: ($.dr)"c" } -> #
   <> //done
     $@.move -> \(<1..> $!\) -> ..|@.path: '$;';
     $@.path !
