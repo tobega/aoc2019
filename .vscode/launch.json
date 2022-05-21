@@ -8,9 +8,9 @@
             "type": "java",
             "name": "Tailspin",
             "request": "launch",
-            "classPaths": ["/Users/tobe/tobega/tailspin-v0/tailspin.jar"],
+            "classPaths": ["/Users/torbjorn.gannholm/tobega/tailspin-v0/tailspin.jar"],
             "mainClass": "tailspin.Tailspin",
-            "args": "a1.tt < a1in.txt"
+            "args": ["a22.tt", "<", "a22in.txt"]
         },
         {
             "type": "java",
