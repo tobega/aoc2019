@@ -14,10 +14,6 @@ def beam: [ 0"1"..49"1" -> \( def y: $;
   \)] !
 \) ];
 
-'$beam... -> '$...;
-';
-' -> !OUT::write
-
 // part 1
 $beam -> list/flatten -> list/sum -> !OUT::write
 '
@@ -30,15 +26,15 @@ templates checkBaseline
                  [ $x, $y ] -> check -> { beam: $, x: $x} !
                \) -> #
   $@ !
-  <{beam: <=1>}> ..|@: (left: $.x);
+  <{beam: <=1"1">}> ..|@: (left: $.x);
 end checkBaseline
 
 // <number>-><{bottom:, left:}+{top:}?+{right:}?}
 templates checkSanta
   @: $ -> checkBaseline;
-  [$@.left, $@.bottom-99] -> check -> \(<=1> ..|@checkSanta: {top:$@checkSanta.bottom-99}; $!\)
-  -> [$@.left+99, $@.top] -> check -> \(<=1> ..|@checkSanta: {right:$@checkSanta.left+99}; $!\)
-  -> [$@.right+1, $@.top] -> check -> \(<=1> ..|@checkSanta: {over:1};\) -> !VOID
+  [$@.left, $@.bottom-99"1"] -> check -> \(<=1"1"> ..|@checkSanta: {top:$@checkSanta.bottom-99"1"}; $!\)
+  -> [$@.left+99"1", $@.top] -> check -> \(<=1"1"> ..|@checkSanta: {right:$@checkSanta.left+99"1"}; $!\)
+  -> [$@.right+1"1", $@.top] -> check -> \(<=1"1"> ..|@checkSanta: {over:1};\) -> !VOID
   '$@;$#10;' -> !OUT::write
   $@ !
 end checkSanta
@@ -48,12 +44,12 @@ templates fineTune
   $@ !
   <{right:<>}>
     @: $;
-    $.bottom-1 -> checkSanta -> #
+    $.bottom-1"1" -> checkSanta -> #
 end fineTune
 
 source findGoodSantaLocation
   templates nextGuess
-    <{max:<=$.min+1>}> !VOID // no more guesses
+    <{max:<=$.min+1"1">}> !VOID // no more guesses
     <{max:<>}>
       ($.min + $.max) ~/ 2 !
     <>
@@ -72,4 +68,4 @@ source findGoodSantaLocation
 end findGoodSantaLocation
 
 // part 2
-$findGoodSantaLocation -> $.left*10000 + $.top -> !OUT::write
+$findGoodSantaLocation -> $.left*10000"1" + $.top -> !OUT::write

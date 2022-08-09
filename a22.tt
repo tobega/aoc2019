@@ -3,44 +3,44 @@ include 'lib/math'
 composer parseInstruction
   { type: <~INT> -> \(<'.*new.*'> 'new' ! <'.*cut.*'> 'cut' ! <'.*increment.*'> 'increment' ! <> 'OOPS $;' -> !OUT::write\),
     <count>? }
-  rule count: count: <INT> -> ($)"1"
+  rule count: count: <INT"1">
 end parseInstruction
 
 def shuffle: [ $IN::lines -> parseInstruction ];
 
 source doShuffle
-  @: [ 0..10006 ];
+  @: 1"1":[ 0..10006 ];
   $shuffle... -> #
   $@ !
   when <{type: <='new'>}> do
-    @: $@(last..1:-1);
-  when <{type: <='cut'>, count: <..0>}> do
-    def cut: $@::length+1+$.count;
+    @: $@(last..1"1":-1);
+  when <{type: <='cut'>, count: <..0"1">}> do
+    def cut: ($@::length+1+$.count)"1";
     @: $@([$cut..last, first..~$cut]);
-  when <{type: <='cut'>, count: <0..>}> do
+  when <{type: <='cut'>, count: <0"1"..>}> do
     @: $@([$.count~..last, first..$.count]);
   when <{type: <='increment'>}> do
     templates spread
       def increment: $;
-      @: [ 0..10006 -> -1 ];
-      $@doShuffle -> \[i]( @spread(($i-1)*$increment mod 10007 + 1): $; \) -> !VOID
+      @: 1"1":[ 0..10006 -> -1 ];
+      $@doShuffle -> \[i]( @spread(($i-1"1")*$increment mod 10007 + 1"1"): $; \) -> !VOID
       $@!
     end spread
     @: $.count -> spread;
 end doShuffle
 
 // part 1
-$doShuffle -> \[i](<=2019> $i - 1 !\) -> !OUT::write
+$doShuffle -> \[i](<=2019> $i - 1"1" !\) -> !OUT::write
 '
 ' -> !OUT::write
 
 templates shuffleFormula&{shuffle:}
-  def size: $;
-  @: [ 1, 0 ];
+  def size: ($)"1";
+  @: [ 1"1", 0"1" ];
   $shuffle... -> #
   $@ !
   when <{type: <='new'>}> do
-    @: [ -$@(1), $size - 1 - $@(2)];
+    @: [ -$@(1), $size - 1"1" - $@(2)];
   when <{type: <='cut'>}> do
     @(2): ($@(2) - $.count) mod $size;
   when <{type: <='increment'>}> do
@@ -53,18 +53,18 @@ $result1 -> '$;
 
 templates multiplicativeInverse&{mod:}
   $math/extendedGcd&{a: $, b: $mod} -> #
-  <{gcd: <=1>}> $.x mod $mod !
+  <{gcd: <=1"1">}> $.x mod $mod !
   <> 'FAIL, gcd was $.gcd;$#10;' -> !OUT::write
 end multiplicativeInverse
 
 source geometricSum&{r:, a:, n:, mod:}
   def rn: ($r math/powerMod&{mod: $mod} $n);
-  def d: (1 - $r) mod $mod -> multiplicativeInverse&{mod: $mod};
-  (($a math/mulMod&{mod:$mod} (1 - $rn)) math/mulMod&{mod:$mod} $d) !
+  def d: (1"1" - $r) mod $mod -> multiplicativeInverse&{mod: $mod};
+  (($a math/mulMod&{mod:$mod} (1"1" - $rn)) math/mulMod&{mod:$mod} $d) !
 end geometricSum
 
 // test
-$geometricSum&{r: 4, a: 3, n: 3, mod: 11}
+$geometricSum&{r: 4"1", a: 3"1", n: 3"1", mod: 11"1"}
 -> '$;$#10;' -> !OUT::write // expect 8
 
 templates invertFormula&{mod:}
@@ -74,25 +74,25 @@ end invertFormula
 
 def formula1: 10007 -> shuffleFormula&{shuffle: $shuffle};
 // sanity check, should be 2019
-$formula1 -> invertFormula&{mod: 10007} -> ($result1 * $(1) + $(2)) mod 10007
+$formula1 -> invertFormula&{mod: 10007"1"} -> ($result1 * $(1) + $(2)) mod 10007
 -> !OUT::write
 '
 ' -> !OUT::write
 
 def twice: ($result1 * $formula1(1) + $formula1(2)) mod 10007;
-def repeated2Formula1: [ ($formula1(1) math/powerMod&{mod: 10007} 2),
-  $geometricSum&{r: $formula1(1), a: $formula1(2), n: 2, mod: 10007}];
+def repeated2Formula1: [ ($formula1(1) math/powerMod&{mod: 10007"1"} 2"1"),
+  $geometricSum&{r: $formula1(1), a: $formula1(2), n: 2"1", mod: 10007"1"}];
 def repeated2: (2019 * $repeated2Formula1(1) + $repeated2Formula1(2)) mod 10007;
 'Expect $twice; = $repeated2;
 ' -> !OUT::write
 def thrice: ($twice * $formula1(1) + $formula1(2)) mod 10007;
-def repeated3Formula1: [ ($formula1(1) math/powerMod&{mod: 10007} 3),
-  $geometricSum&{r: $formula1(1), a: $formula1(2), n: 3, mod: 10007}];
+def repeated3Formula1: [ ($formula1(1) math/powerMod&{mod: 10007"1"} 3"1"),
+  $geometricSum&{r: $formula1(1), a: $formula1(2), n: 3"1", mod: 10007"1"}];
 def repeated3: (2019 * $repeated3Formula1(1) + $repeated3Formula1(2)) mod 10007;
 'Expect $thrice; = $repeated3;
 ' -> !OUT::write
 
-$repeated3Formula1 -> invertFormula&{mod: 10007} -> ($thrice * $(1) + $(2)) mod 10007
+$repeated3Formula1 -> invertFormula&{mod: 10007"1"} -> ($thrice * $(1) + $(2)) mod 10007
 -> 'Expect 2019: $;
 '-> !OUT::write
 
@@ -101,9 +101,9 @@ $repeated3Formula1 -> invertFormula&{mod: 10007} -> ($thrice * $(1) + $(2)) mod 
 ' -> !OUT::write
 
 // part 2
-def bigDeckSize: 119315717514047;
+def bigDeckSize: 119315717514047"1";
 
-def times: 101741582076661;
+def times: 101741582076661"1";
 
 def bigShuffle: $bigDeckSize -> shuffleFormula&{shuffle: $shuffle};
 
@@ -111,5 +111,5 @@ def repeatedBigShuffle: [ ($bigShuffle(1) math/powerMod&{mod: $bigDeckSize} $tim
   $geometricSum&{r: $bigShuffle(1), a: $bigShuffle(2), n: $times, mod: $bigDeckSize}];
 
 $repeatedBigShuffle -> invertFormula&{mod: $bigDeckSize}
-  -> \(def formula: $; (2020 math/mulMod&{mod:$bigDeckSize} $formula(1)) -> ($ + $formula(2)) mod $bigDeckSize !\)
+  -> \(def formula: $; (2020"1" math/mulMod&{mod:$bigDeckSize} $formula(1)) -> ($ + $formula(2)) mod $bigDeckSize !\)
   -> !OUT::write

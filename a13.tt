@@ -6,9 +6,9 @@ def game: $IN::lines -> aoc/parseIntcode;
 
 templates arcadeCabinet
   def engine: $ -> aoc/MarkII&{cooperativeThreading: 1};
-  @: { screen: [], output: [], done: 0 };
+  @: { screen: 0"y":[], output: [], done: 0 };
   [] -> engine::proceed -> #
-  '$@.screen... -> '$... -> \(<=0> ' '! <=1> '█'! <=2> '░'! <=3> '_'! <=4> '*'!\);$#10;';$#10;' -> !OUT::write
+  '$@.screen... -> '$... -> \(<=0"1"> ' '! <=1"1"> '█'! <=2"1"> '░'! <=3"1"> '_'! <=4"1"> '*'!\);$#10;';$#10;' -> !OUT::write
   $@.screen !
   when <{status: <='end'>}> do
     @.done: 1;
@@ -18,25 +18,25 @@ templates arcadeCabinet
     ..|@.output: $.out;
     $@.output -> #
   when <[](3..)> do
-    def x: 1 + ^@.output(1);
-    def y: 1 + ^@.output(1);
-    ($@.screen::length+1)"1"..$y -> ..|@.screen: [];
-    ($@.screen($y)::length+1)"1"..$x -> ..|@.screen($y): 0;
+    def x: (^@.output(1))"x";
+    def y: (^@.output(1))"y";
+    ($@.screen::length)"y"..$y -> ..|@.screen: 0"x":[];
+    ($@.screen($y)::length)"x"..$x -> ..|@.screen($y): 0;
     @.screen($y;$x): ^@.output(1);
-    [] -> \(<?($@arcadeCabinet.done <=0>)> $ !\) -> engine::proceed -> #
+    [] -> \(<?($@arcadeCabinet.done <=done´0>)> $ !\) -> engine::proceed -> #
   when <[]> do
-    [] -> \(<?($@arcadeCabinet.done <=0>)> $ !\) -> engine::proceed -> #
+    [] -> \(<?($@arcadeCabinet.done <=done´0>)> $ !\) -> engine::proceed -> #
   otherwise 'Error $;' -> !OUT::write
 end arcadeCabinet
 
 // part 1
-$game -> arcadeCabinet -> list/flatten -> [ $... -> \(<=2> $ !\) ] -> $::length -> !OUT::write
+$game -> arcadeCabinet -> list/flatten -> [ $... -> \(<=2"1"> $ !\) ] -> $::length -> !OUT::write
 '
 ' -> !OUT::write
 
 templates botPlayer
   @: { ballX: -1"1", paddleX: -1"1", score: -1"1", output: [], done: 0 };
-  def engine: [2, $(2..last)...] -> aoc/MarkII&{cooperativeThreading: 1};
+  def engine: [2"1", $(2..last)...] -> aoc/MarkII&{cooperativeThreading: 1};
   [] -> engine::proceed -> #
   $@.score !
   when <='>'> do
@@ -48,23 +48,23 @@ templates botPlayer
   when <{out: <>}> do
     ..|@.output: $.out;
     $@.output -> #
-  when <[](3..)?($(1) <=-1>)?($(2) <=0>)> do
+  when <[](3..)?($(1) <=-1"1">)?($(2) <=0"1">)> do
     @.score: $(3);
     @.output: $@.output(4..last);
-    [] -> \(<?($@botPlayer.done <=0>)> $ !\) -> engine::proceed -> #
-  when <[](3..)?($(3) <=3>)> do
+    [] -> \(<?($@botPlayer.done <=done´0>)> $ !\) -> engine::proceed -> #
+  when <[](3..)?($(3) <=3"1">)> do
     @.paddleX: $(1);
     @.output: $@.output(4..last);
-    [] -> \(<?($@botPlayer.done <=0>)> $ !\) -> engine::proceed -> #
-  when <[](3..)?($(3) <=4>)> do
+    [] -> \(<?($@botPlayer.done <=done´0>)> $ !\) -> engine::proceed -> #
+  when <[](3..)?($(3) <=4"1">)> do
     @.ballX: $(1);
     @.output: $@.output(4..last);
-    [] -> \(<?($@botPlayer.done <=0>)> $ !\) -> engine::proceed -> #
+    [] -> \(<?($@botPlayer.done <=done´0>)> $ !\) -> engine::proceed -> #
   when <[](3..)> do
     @.output: $@.output(4..last);
-    [] -> \(<?($@botPlayer.done <=0>)> $ !\) -> engine::proceed -> #
+    [] -> \(<?($@botPlayer.done <=done´0>)> $ !\) -> engine::proceed -> #
   when <[]> do
-    [] -> \(<?($@botPlayer.done <=0>)> $ !\) -> engine::proceed -> #
+    [] -> \(<?($@botPlayer.done <=done´0>)> $ !\) -> engine::proceed -> #
   otherwise 'Error $;' -> !OUT::write
 end botPlayer
 

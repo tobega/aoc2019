@@ -17,9 +17,8 @@
             "name": "Test Tailspin",
             "request": "launch",
             "mainClass": "tailspin.Tailspin",
-            "classPaths": ["../tailspin-v0/tailspin.jar",
-                 "../tailspin-v0/lib/antlr-runtime-4.8.jar"],
-            "args": "--test lib/math.tt"
+            "classPaths": ["/Users/torbjorn.gannholm/tobega/tailspin-v0/tailspin.jar"],
+            "args": "--test lib/combinatorics.tt"
         }
     ]
 }

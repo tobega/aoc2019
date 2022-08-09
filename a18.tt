@@ -3,13 +3,13 @@ include 'lib/list'
 
 data col <"x">, row <"y">
 
-def map: [ $IN::lines -> [ $... ]];
+def map: 1"y":[ $IN::lines -> 1"x":[ $... ]];
 
-def start: $map -> \[i;j](<='@'> { row: ($i)"y", col: ($j)"x" } !\) ... ...;
+def start: $map -> \[i;j](<='@'> { row: $i, col: $j } !\) ... ...;
 
-def keyPositions: [ $map -> \[i;j](<'\p{Lower}'> { key: $, row: ($i)"y", col: ($j)"x" } !\) ... ...];
+def keyPositions: [ $map -> \[i;j](<'\p{Lower}'> { key: $, row: $i, col: $j } !\) ... ...];
 
-def keys: [ $keyPositions... ->  $.key ];
+def keys: [ $keyPositions... ->  $.key::raw ];
 
 def doors: [ $map -> \[i;j](<'\p{Upper}'> $ !\) ... ...];
 
@@ -25,7 +25,7 @@ templates calculateDistances&{map:}
     def base: ^@.current(1);
     $directions...
       -> { at: { row: $base.at.row + $.dRow, col: $base.at.col + $.dCol},
-           distance: $base.distance + 1, doors: $base.doors,
+           distance: $base.distance + 1"steps", doors: $base.doors,
            others: $base.others}
       -> \isValid(
          <?($@calculateDistances.map($.at.row; $.at.col) <~='#'>)>
@@ -76,9 +76,9 @@ processor DistanceTable
       {from: $@.at, to: $path($i)} -> @DistanceTable::get
       -> \distance( @: $.distance;
         $.doors... -> \(<?($path(1..$i) <~[<'(?i)$;'>]>)>
-           @distance: $@distance + 1000; \) -> !VOID
+           @distance: $@distance + 1000"steps"; \) -> !VOID
         $.others... -> \(<?($path(1..$i) <~[<'(?i)$;'>]>)>
-           @distance: $@distance + 1000; \) -> !VOID
+           @distance: $@distance + 1000"steps"; \) -> !VOID
         $@! \distance)
       -> @.length: $@.length + $;
       @.at: $path($i);
@@ -96,9 +96,9 @@ processor DistanceTable
       -> \[k](<~=[]> @fourBotPathLength.at($k): $path($i); $!\) -> $(1) -> $(1)
       -> \distance( @: $.distance;
         $.doors... -> \(<?($path(1..$i) <~[<'(?i)$;'>]>)>
-           @distance: $@distance + 1000; \) -> !VOID
+           @distance: $@distance + 1000"steps"; \) -> !VOID
         $.others... -> \(<?($path(1..$i) <~[<'(?i)$;'>]>)>
-           @distance: $@distance + 1000; \) -> !VOID
+           @distance: $@distance + 1000"steps"; \) -> !VOID
         $@! \distance)
       -> @.length: $@.length + $;
   end fourBotPathLength
@@ -161,19 +161,24 @@ source geneSoup&{popSize:, genes:, valueFn:}
   end isStagnated
 
   templates mutate
-    data a <"1">, b <"1"> local
         @: $;
         1..2 -> 20 -> SYS::randomInt -> \(<=0> $!\)
         -> $genes::length -> SYS::randomInt -> $+1
-        -> { a: $ -> SYS::randomInt -> $+1, b: $, which: 2 -> SYS::randomInt -> $+1 }
-        -> @.chromosome($.which): [$@.chromosome($.which;1"1"..$.a-1), $@.chromosome($.which;$.a..$.b-1), $@.chromosome($.which;$.b..last)] -> shuffle -> list/flatten;
+        -> \(
+          def a: $ -> SYS::randomInt -> $+1;
+          def b: $;
+          def which: 2 -> SYS::randomInt -> $+1;
+          @mutate.chromosome($which): $@mutate.chromosome($which)
+          -> [$(first..$a-1), $($a..$b-1), $($b..last)] -> shuffle -> list/flatten;
+        \) -> !VOID
         1..5 -> 20 -> SYS::randomInt -> \(<=0> $!\)
-        -> { which: 2 -> SYS::randomInt -> $+1,
-          a: $genes::length -> SYS::randomInt -> $+1,
-          b: $genes::length -> SYS::randomInt -> $
-        } -> \( def popped: ^@mutate.chromosome($.which; $.a);
-           @mutate.chromosome($.which):
-             [$@mutate.chromosome($.which; 1"1"..$.b)..., $popped, $@mutate.chromosome($.which; $.b+1..last)...];
+        -> \(
+          def which: 2 -> SYS::randomInt -> $+1;
+          def a: $genes::length -> SYS::randomInt -> $+1;
+          def b: $genes::length -> SYS::randomInt -> $;
+          def popped: ^@mutate.chromosome($which; $a);
+          @mutate.chromosome($which): $@mutate.chromosome($which)
+          -> [$(first..$b)..., $popped, $($b+1..last)...];
         \) -> !VOID
         $@!
   end mutate
@@ -181,9 +186,9 @@ source geneSoup&{popSize:, genes:, valueFn:}
   sink enterPop
     {tries: 5"1", candidate: $} -> #
     <?($@geneSoup.pop::length <..~$popSize>)> ..|@geneSoup.pop: $.candidate -> mutate;
-    <{tries: <1..>}> def toReplace: $@geneSoup.pop::length -> SYS::randomInt -> $+1;
+    <{tries: <1"1"..>}> def toReplace: $@geneSoup.pop::length -> SYS::randomInt -> $+1;
       $ -> \(<{candidate:<{value: <..$@geneSoup.pop($toReplace).value>}>}> @geneSoup.pop($toReplace): $.candidate -> mutate;
-        <> { tries: $.tries-1, candidate: $.candidate} ! \) -> #
+        <> { tries: $.tries-1"1", candidate: $.candidate} ! \) -> #
   end enterPop
 
   @: {count: 0"1", best: 99999999999"steps", bestGene:[]};
@@ -192,7 +197,7 @@ source geneSoup&{popSize:, genes:, valueFn:}
 
   <=1> [$@.best, $@.bestGene] !
   <>
-    @.count: $@.count + 1;
+    @.count: $@.count + 1"1";
     def babies: $@.pop -> mate;
     $babies... -> $.value -> !updateBest
 '$@.count; best $:[$@.best, $@.bestGene];$#10;' -> !OUT::write
@@ -202,30 +207,30 @@ source geneSoup&{popSize:, genes:, valueFn:}
 end geneSoup
 
 // part 1
-'The best path is $geneSoup&{popSize: 200, genes:$keys, valueFn: distanceTable::pathLength};
-' -> !OUT::write
+//'The best path is $geneSoup&{popSize: 200, genes:$keys, valueFn: distanceTable::pathLength};
+//' -> !OUT::write
 
 // part 2
 def newMap: $map -> \[i;j](
-  <?(($i)"y" <=$start.row-1>)?(($j)"x" <=$start.col-1>)> '1' !
-  <?(($i)"y" <=$start.row-1>)?(($j)"x" <=$start.col+1>)> '2' !
-  <?(($i)"y" <=$start.row+1>)?(($j)"x" <=$start.col-1>)> '3' !
-  <?(($i)"y" <=$start.row+1>)?(($j)"x" <=$start.col+1>)> '4' !
-  <?(($i)"y" <=$start.row-1>)?(($j)"x" <=$start.col>)> '#' !
-  <?(($i)"y" <=$start.row+1>)?(($j)"x" <=$start.col>)> '#' !
-  <?(($i)"y" <=$start.row>)?(($j)"x" <=$start.col-1>)> '#' !
-  <?(($i)"y" <=$start.row>)?(($j)"x" <=$start.col+1>)> '#' !
-  <?(($i)"y" <=$start.row>)?(($j)"x" <=$start.col>)> '#' !
+  <?($i <=$start.row-1"y">)?($j <=$start.col-1"x">)> '1' !
+  <?($i <=$start.row-1"y">)?($j <=$start.col+1"x">)> '2' !
+  <?($i <=$start.row+1"y">)?($j <=$start.col-1"x">)> '3' !
+  <?($i <=$start.row+1"y">)?($j <=$start.col+1"x">)> '4' !
+  <?($i <=$start.row-1"y">)?($j <=$start.col>)> '#' !
+  <?($i <=$start.row+1"y">)?($j <=$start.col>)> '#' !
+  <?($i <=$start.row>)?($j <=$start.col-1"x">)> '#' !
+  <?($i <=$start.row>)?($j <=$start.col+1"x">)> '#' !
+  <?($i <=$start.row>)?($j <=$start.col>)> '#' !
   <> $ !
 \);
 
 
 def newTable: $DistanceTable;
 
-{row: $start.row-1, col: $start.col-1} -> calculateDistances&{map: $newMap} -> $::entries -> !newTable::add&{from: '1'}
-{row: $start.row-1, col: $start.col+1} -> calculateDistances&{map: $newMap} -> $::entries -> !newTable::add&{from: '2'}
-{row: $start.row+1, col: $start.col-1} -> calculateDistances&{map: $newMap} -> $::entries -> !newTable::add&{from: '3'}
-{row: $start.row+1, col: $start.col+1} -> calculateDistances&{map: $newMap} -> $::entries -> !newTable::add&{from: '4'}
+{row: $start.row-1"y", col: $start.col-1"x"} -> calculateDistances&{map: $newMap} -> $::entries -> !newTable::add&{from: '1'}
+{row: $start.row-1"y", col: $start.col+1"x"} -> calculateDistances&{map: $newMap} -> $::entries -> !newTable::add&{from: '2'}
+{row: $start.row+1"y", col: $start.col-1"x"} -> calculateDistances&{map: $newMap} -> $::entries -> !newTable::add&{from: '3'}
+{row: $start.row+1"y", col: $start.col+1"x"} -> calculateDistances&{map: $newMap} -> $::entries -> !newTable::add&{from: '4'}
 $keyPositions... -> \( def from: $.key;
   $ -> calculateDistances&{map: $newMap} -> $::entries -> !newTable::add&{from: $from}
 \) -> !VOID

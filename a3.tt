@@ -4,7 +4,7 @@ include 'lib/list'
 
 composer wire
   [ <wiring>+ ]
-  rule wiring: { direction: <'[U,D,L,R]'>, distance: <"1"> } (<','>?)
+  rule wiring: { direction: <'[U,D,L,R]'>, distance: <INT"1"> } (<','>?)
 end wire
 
 //def wires: [ 'R8,U5,L5,D3' -> wire, 'U7,R6,D4,L4' -> wire ];

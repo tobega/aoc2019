@@ -3,13 +3,13 @@ include 'lib/list'
 include 'lib/math'
 
 composer parsePosition
-  { (<'<x='>) x: <"1">, (<', y='>) y: <"1">, (<', z='>) z: <"1"> (<'>'>) }
+  { (<'<x='>) x: <INT"1">, (<', y='>) y: <INT"1">, (<', z='>) z: <INT"1"> (<'>'>) }
 end parsePosition
 
 def moonsAtStart: [$IN::lines -> parsePosition -> { position: $, velocity: {dx: 0"1", dy: 0"1", dz: 0"1"} }];
 
 templates absSum
-  @: 0;
+  @: 0"1";
   $... -> $::value -> math/abs -> @: $@ + $;
   $@ !
 end absSum
@@ -51,19 +51,19 @@ def moonsAt1000: $moonsAtStart -> moonTime&{increase: 1000};
 templates findHalfCycles
   @: { rx: 0"t", ry: 0"t", rz: 0"t", time: 1"t"};
   $moonsAtStart -> step -> #
-  when <[<{velocity: <{dx: <=0>}>}>+ VOID] ?($@.rx <=0"t">)> do
+  when <[<{velocity: <{dx: <=0"1">}>}>+ VOID] ?($@.rx <=0"t">)> do
     @.rx: $@.time;
     $ -> #
-  when <[<{velocity: <{dy: <=0>}>}>+ VOID] ?($@.ry <=0"t">)> do
+  when <[<{velocity: <{dy: <=0"1">}>}>+ VOID] ?($@.ry <=0"t">)> do
     @.ry: $@.time;
     $ -> #
-  when <[<{velocity: <{dz: <=0>}>}>+ VOID] ?($@.rz <=0"t">)> do
+  when <[<{velocity: <{dz: <=0"1">}>}>+ VOID] ?($@.rz <=0"t">)> do
     @.rz: $@.time;
     $ -> #
   when <?($@ <{rx: <~=0"t">, ry: <~=0"t">, rz: <~=0"t">}>)> do
     $@!
   when <> do
-    @.time: $@.time + 1;
+    @.time: $@.time + 1"t";
     $ -> step -> #
 end findHalfCycles
 
@@ -85,7 +85,7 @@ templates factorize
   $@!
 end factorize
 
-[$halfCycles... -> \(<~?($::key <='time'>)> $::value -> $::raw !\)]
+[$halfCycles... -> \(<~?($::key <='time'>)> ($::value)"1" !\)]
 -> factorize
 -> list/product -> 2 * $
 -> !OUT::write

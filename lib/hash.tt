@@ -87,19 +87,19 @@ processor Map&{key:, value:}
 end Map
 
 test 'map'
-  def map: [{letter: 'a', count: 1}, {letter: 'b', count: 2}] -> Map&{key: :(letter:), value: :(count:)};
+  def map: [{letter: 'a', count: 1"1"}, {letter: 'b', count: 2"1"}] -> Map&{key: :(letter:), value: :(count:)};
 
-  assert [ $map::entries ] <[<={letter: 'a', count: 1}>, <={letter: 'b', count: 2}>](2)> 'loaded'
+  assert [ $map::entries ] <[<={letter: 'a', count: 1"1"}>, <={letter: 'b', count: 2"1"}>](2)> 'loaded'
 
-  assert 'a' -> map::get <=1> 'a should be mapped to 1'
+  assert letter´'a' -> map::get <=1"1"> 'a should be mapped to 1'
 
-  assert [{letter: 'a', count: 33} -> map::put] <[<={letter: 'a', count: 1}>](1)> 'should evict mapping a to 1'
+  assert [{letter: 'a', count: 33"1"} -> map::put] <[<={letter: 'a', count: 1"1"}>](1)> 'should evict mapping a to 1'
 
-  assert 'a' -> map::get <=33> 'a should now be mapped to 33'
+  assert letter´'a' -> map::get <=33"1"> 'a should now be mapped to 33'
 
-  assert ['c' -> map::get] <[](0)> 'c should not be mapped'
+  assert [letter´'c' -> map::get] <[](0)> 'c should not be mapped'
 
-  assert ['b' -> map::remove] <[<=2>](1)> 'should remove 2 for b'
+  assert [letter´'b' -> map::remove] <[<=2"1">](1)> 'should remove 2 for b'
 
-  assert ['b' -> map::get] <[](0)> 'b should not be mapped'
+  assert [letter´'b' -> map::get] <[](0)> 'b should not be mapped'
 end 'map'

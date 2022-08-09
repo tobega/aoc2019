@@ -3,14 +3,14 @@ data out <"1">
 
 composer parseIntcode
   [ <code>+ ]
-  rule code: <"1"> (<','>?)
+  rule code: <INT"1"> (<','>?)
 end parseIntcode
 
 templates compute&{inputs:}
   def machine: $ -> MarkII&{cooperativeThreading: 0};
   $inputs -> machine::proceed -> #
   <{ status: <='end'> }> $.out !
-  <{ out: <=0> }> !VOID // ignore passing diagnostic test
+  <{ out: <=0"1"> }> !VOID // ignore passing diagnostic test
   <> $ !
 end compute
 
@@ -21,7 +21,7 @@ end run
 
 processor MarkII&{cooperativeThreading:}
   data position <"adr">, base <"adr"> local
-  @: { memory: $, base: 0"adr", position: 1"adr", input:[] };
+  @: { memory: 1"adr":[$...], base: 0"adr", position: 1"adr", input:[] };
 
   templates opcode
     // requires <"adr">
@@ -32,7 +32,7 @@ processor MarkII&{cooperativeThreading:}
     // requires <"adr">
     // produces <[<"adr">=$n VOID]>
     templates checkMem
-      $@MarkII.memory::length + 1"adr"..$ -> ..|@MarkII.memory: 0"1";
+      ($@MarkII.memory::length + 1)"adr"..$ -> ..|@MarkII.memory: 0"1";
       $ !
     end checkMem
     templates modes
@@ -43,9 +43,9 @@ processor MarkII&{cooperativeThreading:}
     end modes
     def position: $;
     $@MarkII.memory($) -> modes -> \[i](
-      <=0"pm"> ($@MarkII.memory($position + $i) + 1)"adr" !
+      <=0"pm"> ($@MarkII.memory($position + ($i)"adr") + 1)"adr" !
       <=1"pm"> ($position + $i)"adr" !
-      <=2"pm"> ($@MarkII.memory($position + $i) + $@MarkII.base + 1)"adr" !
+      <=2"pm"> ($@MarkII.memory($position + ($i)"adr") + $@MarkII.base + 1)"adr" !
     \) -> \[i]($ -> checkMem !\) !
   end paramAddress
 
@@ -57,19 +57,19 @@ processor MarkII&{cooperativeThreading:}
 
       <?($ -> opcode <=99"ic">)>
         @MarkII.position: 0"adr";
-        { out: $@MarkII.memory(1), status: 'end' } !
+        { out: $@MarkII.memory(1"adr"), status: 'end' } !
 
       <?($ -> opcode <=1"ic">)>
         def paramAddress: $ -> paramAddress&{n: 3};
         def result: $paramAddress(3);
         @MarkII.memory($result): $@MarkII.memory($paramAddress(1)) + $@MarkII.memory($paramAddress(2));
-        $ + 4 -> #
+        $ + 4"adr" -> #
 
       <?($ -> opcode <=2"ic">)>
         def paramAddress: $ -> paramAddress&{n: 3};
         def result: $paramAddress(3);
         @MarkII.memory($result): $@MarkII.memory($paramAddress(1)) * $@MarkII.memory($paramAddress(2));
-        $ + 4 -> #
+        $ + 4"adr" -> #
 
       <?($ -> opcode <=3"ic">)?($@MarkII.input <[](0)>)>
         // Park it and wait for input
@@ -79,41 +79,41 @@ processor MarkII&{cooperativeThreading:}
       <?($ -> opcode <=3"ic">)>
         def paramAddress: $ -> paramAddress&{n: 1};
         def result: $paramAddress(1);
-        @MarkII.memory($result): ^@MarkII.input(1);
-        $ + 2 -> #
+        @MarkII.memory($result): (^@MarkII.input(1))"1";
+        $ + 2"adr" -> #
 
-      <?($ -> opcode <=4"ic">)?($ + 2 -> opcode <=99"ic">)>
+      <?($ -> opcode <=4"ic">)?($ + 2"adr" -> opcode <=99"ic">)>
         @MarkII.position: 0"adr";
         $ -> paramAddress&{n: 1} -> $@MarkII.memory($(1)) -> { out: $, status: 'end' } !
 
       <?($ -> opcode <=4"ic">)>
         { position: $, out: $ -> paramAddress&{n: 1} -> $@MarkII.memory($(1)) } !
-        $ + 2 -> \(<?($cooperativeThreading <=0>)> $ ! <> @MarkII.position: $;\) -> #
+        $ + 2"adr" -> \(<?($cooperativeThreading <=0>)> $ ! <> @MarkII.position: $;\) -> #
 
       <?($ -> opcode <=5"ic">)>
         def params: $ -> paramAddress&{n: 2} -> [$... -> $@MarkII.memory($)];
-        $ + 3 -> \(<?($params(1) <~=0>)> ($params(2) + 1)"adr" ! <> $ ! \) -> #
+        $ + 3"adr" -> \(<?($params(1) <~=0"1">)> ($params(2) + 1)"adr" ! <> $ ! \) -> #
 
       <?($ -> opcode <=6"ic">)>
         def params: $ -> paramAddress&{n: 2} -> [$... -> $@MarkII.memory($)];
-        $ + 3 -> \(<?($params(1) <=0>)> ($params(2) + 1)"adr" ! <> $ ! \) -> #
+        $ + 3"adr" -> \(<?($params(1) <=0"1">)> ($params(2) + 1)"adr" ! <> $ ! \) -> #
 
       <?($ -> opcode <=7"ic">)>
         def paramAddress: $ -> paramAddress&{n: 3};
         def result: $paramAddress(3);
-        @MarkII.memory($result): $@MarkII.memory($paramAddress(1)) -> \(<..~$@MarkII.memory($paramAddress(2))> 1 ! <> 0 !\);
-        $ + 4 -> #
+        @MarkII.memory($result): $@MarkII.memory($paramAddress(1)) -> \(<..~$@MarkII.memory($paramAddress(2))> 1"1" ! <> 0"1" !\);
+        $ + 4"adr" -> #
 
       <?($ -> opcode <=8"ic">)>
         def paramAddress: $ -> paramAddress&{n: 3};
         def result: $paramAddress(3);
-        @MarkII.memory($result): $@MarkII.memory($paramAddress(1)) -> \(<=$@MarkII.memory($paramAddress(2))> 1 ! <> 0 !\);
-        $ + 4 -> #
+        @MarkII.memory($result): $@MarkII.memory($paramAddress(1)) -> \(<=$@MarkII.memory($paramAddress(2))> 1"1" ! <> 0"1" !\);
+        $ + 4"adr" -> #
 
       <?($ -> opcode <=9"ic">)>
         def paramAddress: $ -> paramAddress&{n: 1};
         @MarkII.base: ($@MarkII.base + $@MarkII.memory($paramAddress(1)))"adr";
-        $ + 2 -> #
+        $ + 2"adr" -> #
 
       <> 'Error! $; $@MarkII.memory($-10..$+1);' !
     end proceed

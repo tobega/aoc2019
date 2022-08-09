@@ -17,7 +17,7 @@ def bot: $springdroid -> aoc/MarkII&{cooperativeThreading: 0};
 $control -> !OUT::write
 
 [ $control::asCodePoints -> bot::proceed -> $.out ] ->
-'$... -> \(<..127> '$#$;'! <> $! \);
+'$... -> \(<..127"1"> '$#$;'! <> $! \);
 '-> !OUT::write
 
 // part 2
@@ -38,5 +38,5 @@ def bot2: $springdroid -> aoc/MarkII&{cooperativeThreading: 0};
 $control2 -> !OUT::write
 
 [ $control2::asCodePoints -> bot2::proceed -> $.out ] ->
-'$... -> \(<..127> '$#$;'! <> $! \);
+'$... -> \(<..127"1"> '$#$;'! <> $! \);
 '-> !OUT::write

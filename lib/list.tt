@@ -21,14 +21,16 @@ test 'min'
 end 'min'
 
 templates sum
-  @: 0;
-  $... -> @: $@ + $;
+  when <[](1..)> do
+  @: $(first);
+  $(first~..last)... -> @: $@ + $;
   $@ !
 end sum
 
 test 'sum'
   assert [1, 5, 3, 9, 2] -> sum <=20> 'sum should be 20'
-  assert [] -> sum <=0> 'empty list has sum 0'
+  assert [1"m", 5"m", 3"m", 9"m", 2"m"] -> sum <=20"m"> 'sum should be 20"m"'
+  assert [ [] -> sum] <[](0)> 'empty list gives no result'
 end 'sum'
 
 templates product

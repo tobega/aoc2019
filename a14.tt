@@ -6,24 +6,24 @@ data surplus <"1">
 
 composer parseReaction
   { ingredients: [ <ingredient>+ ], (<' => '>) result: <chemical> }
-  rule chemical: { amount: <INT>, (<WS>) substance: <~'[\s,]'> }
+  rule chemical: { amount: <INT"1">, (<WS>) substance: <~'[\s,]'> }
   rule ingredient: <chemical> (<', '>?)
 end parseReaction
 
 def reactionMap: [ $IN::lines -> parseReaction ] -> hash/Map&{key: :(result:; substance:), value: :()};
 
 templates convertToIngredients&{stock:, need:}
-      when <~'ORE'> do
+      when <~substance´'ORE'> do
         def reaction: $ -> reactionMap::get;
         def amountNeeded: $ -> need::remove;
-        def reactionsNeeded: ($amountNeeded + $reaction.result.amount - 1) ~/ $reaction.result.amount;
+        def reactionsNeeded: ($amountNeeded + $reaction.result.amount - 1"1") ~/ $reaction.result.amount;
         $reaction.ingredients... ->
         \calculateNeed(def ingredient: $;
-          def available: [ $ingredient.substance -> stock::remove ] -> \(when <=[]> do 0 ! when <> do $(1) !\);
+          def available: [ $ingredient.substance -> stock::remove ] -> \(when <=[]> do 0"1" ! when <> do $(1) !\);
           $available - $ingredient.amount * $reactionsNeeded ->
           \storeOrProcure(
-            when <0~..> do { substance: $ingredient.substance, surplus: $ } -> stock::put -> !VOID
-            when <..~0> do
+            when <0"1"~..> do { substance: $ingredient.substance, surplus: $ } -> stock::put -> !VOID
+            when <..~0"1"> do
               def deficit: -$;
               { substance: $ingredient.substance, deficit: $deficit }
               -> need::put // continues with old entry if one existed
@@ -38,22 +38,22 @@ templates calculateOreForFuel&{stock:}
   def need: [{ substance: 'FUEL', deficit: $ }] -> hash/Map&{key: :(substance:), value: :(deficit:)};
   [$need::entries -> $.substance] -> #
 
-  when <=['ORE']> do 'ORE' -> need::get !
+  when <=[substance´'ORE']> do substance´'ORE' -> need::get !
 
   otherwise $... -> convertToIngredients&{stock: $stock, need: $need } -> !VOID
     [$need::entries -> $.substance] -> #
 end calculateOreForFuel
 
 // part 1
-def oreForOneFuel: 1 -> calculateOreForFuel&{stock: [] -> hash/Map&{key: :(substance:), value: :(surplus:)}};
+def oreForOneFuel: 1"1" -> calculateOreForFuel&{stock: [] -> hash/Map&{key: :(substance:), value: :(surplus:)}};
 '$oreForOneFuel;
 ' -> !OUT::write
 
 // part 2
 source calculateFuelFromTrillion
-  def trillion: 1000000000000;
+  def trillion: 1000000000000"1";
   def stock: [] -> hash/Map&{key: :(substance:), value: :(surplus:)};
-  @: 0;
+  @: 0"1";
   $trillion -> #
   $@ !
 
@@ -65,8 +65,8 @@ source calculateFuelFromTrillion
 
   otherwise
     def remaining: $;
-    1 -> calculateOreForFuel&{stock: $stock} ->
-      \(when <..$remaining> do @calculateFuelFromTrillion: $@calculateFuelFromTrillion + 1; $remaining - $ ! \) -> #
+    1"1" -> calculateOreForFuel&{stock: $stock} ->
+      \(when <..$remaining> do @calculateFuelFromTrillion: $@calculateFuelFromTrillion + 1"1"; $remaining - $ ! \) -> #
 end calculateFuelFromTrillion
 
 $calculateFuelFromTrillion -> !OUT::write

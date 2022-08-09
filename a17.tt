@@ -6,11 +6,11 @@ data row <"r">, col <"c">, dr <"r">, dc <"c">
 def asciiProgram: $IN::lines -> aoc/parseIntcode;
 
 templates collectAsciiRows
-  @: [[]];
+  @: 1"r":[1"c":[]];
   $... -> #
-  $@ -> \(<?($(last) <[](0)>)> $(1..last-1) -> # <> $(last)::length -> !OUT::write $ !\) !
-  <=10> ..|@: [];
-  <..27> $ -> 'Got ascii $;$#10;' -> !OUT::write
+  $@ -> \(<?($(last) <[](0)>)> $(first..~last) -> # <> $(last)::length -> !OUT::write $ !\) !
+  <=10"1"> ..|@: 1"c":[];
+  <..27"1"> $ -> 'Got ascii $;$#10;' -> !OUT::write
   <> ..|@(last): '$#$;';
 end collectAsciiRows
 
@@ -32,7 +32,7 @@ def viewTest: '#######...#####
 ....#...#......
 ....#...#......
 ....#####......
-'-> $::asCodePoints -> collectAsciiRows;
+'-> $::asCodePoints -> [$... -> ($)"1"] -> collectAsciiRows;
 
 def view: $viewProd;
 
@@ -44,10 +44,10 @@ $view... -> '$;
 $view -> \[row;col](
   $ -> \(<~='.'> $!\) ->
   // using a little trick where getting a range of one element just gives an empty list if it doesn't exist
-  [ $view($row-1..$row-1;$col)..., $view($row+1..$row+1;$col)...,
-    $view($row;$col-1..$col-1)..., $view($row;$col+1..$col+1)... ]
+  [ $view($row-1"r"..$row-1"r";$col)..., $view($row+1"r"..$row+1"r";$col)...,
+    $view($row;$col-1"c"..$col-1"c")..., $view($row;$col+1"c"..$col+1"c")... ]
   -> [ $... -> \(<~='.'> 1 !\) ] -> list/sum -> \(<3..> $ !\)
-  -> ($row-1)*($col-1) ! \) -> list/flatten -> list/sum -> !OUT::write
+  -> (($row-1)*($col-1))"alignment params" ! \) -> list/flatten -> list/sum -> !OUT::write
 
 '
 
@@ -63,23 +63,24 @@ def vacuumbot: $view -> \[row;col](
 
 // start with simplest, ignoring alternative paths at intersections
 templates buildPath
-  @: {path: [], move: 0"1"};
+  data is_path <[<[<='#'>](1)>](1)> local
+  @: {path: [], move: 0"t"};
   $ -> #
-  <?($view($.row+$.dr..$.row+$.dr; $.col+$.dc..$.col+$.dc) <=[['#']]>)>
-    @.move: $@.move+1;
+  <?($view($.row+$.dr..$.row+$.dr; $.col+$.dc..$.col+$.dc) <is_path>)>
+    @.move: $@.move+1"t";
     { $..., row: $.row+$.dr, col: $.col+$.dc } -> #
-  <?($view($.row+($.dc)"r"..$.row+($.dc)"r"; $.col-($.dr)"c"..$.col-($.dr)"c") <=[['#']]>)>
-    $@.move -> \(<1..> $!\) -> ..|@.path: '$;';
-    @.move: 0;
+  <?($view($.row+($.dc)"r"..$.row+($.dc)"r"; $.col-($.dr)"c"..$.col-($.dr)"c") <is_path>)>
+    $@.move -> \(<1"t"..> $!\) -> ..|@.path: '$::raw;';
+    @.move: 0"t";
     ..|@.path: 'R';
     { $..., dr: ($.dc)"r", dc: (-$.dr)"c" } -> #
-  <?($view($.row-($.dc)"r"..$.row-($.dc)"r"; $.col+($.dr)"c"..$.col+($.dr)"c") <=[['#']]>)>
-    $@.move -> \(<1..> $!\) -> ..|@.path: '$;';
-    @.move: 0;
+  <?($view($.row-($.dc)"r"..$.row-($.dc)"r"; $.col+($.dr)"c"..$.col+($.dr)"c") <is_path>)>
+    $@.move -> \(<1"t"..> $!\) -> ..|@.path: '$::raw;';
+    @.move: 0"t";
     ..|@.path: 'L';
     { $..., dr: (-$.dc)"r", dc: ($.dr)"c" } -> #
   <> //done
-    $@.move -> \(<1..> $!\) -> ..|@.path: '$;';
+    $@.move -> \(<1"t"..> $!\) -> ..|@.path: '$::raw;';
     $@.path !
 end buildPath
 
@@ -119,10 +120,10 @@ end createProgram
 
 def program: $createProgram;
 def symbols: ['ABC'...];
-def main: $symbols($program.main) -> \[i]($! ',' !\) -> $(1..last-1);
+def main: $symbols($program.main) -> \[i]($! ',' !\) -> $(first..~last);
 
 def sourceCode: '$main...;
-$program.subs... -> '$(1..last-1)...;
+$program.subs... -> '$(first..~last)...;
 ';';
 
 '$sourceCode;
@@ -131,5 +132,5 @@ $program.subs... -> '$(1..last-1)...;
 def input: '$sourceCode;n
 ' -> $::asCodePoints;
 
-[2, $asciiProgram(2..last)...] -> aoc/compute&{inputs: $input}
--> \(<0..> $!\) -> !OUT::write
+[2"1", $asciiProgram(first~..last)...] -> aoc/compute&{inputs: $input}
+-> \(<0"1"..> $!\) -> !OUT::write

@@ -1,36 +1,38 @@
 include 'lib/list'
 include 'lib/hash'
 
+data object <'.+'>, around <[]|object>
+
 composer orbit
-  { value: <~'\)'>, (<'\)'>) key: <'.*'> }
+  { around: <~'\)'>, (<'\)'>) orbitter: <object´'.*'> }
 end orbit
 
-def orbitMap: [ $IN::lines -> orbit ] -> hash/Map;
+def orbitMap: [ $IN::lines -> orbit ] -> hash/Map&{key: :(orbitter:), value: :(around:)};
 
 templates resolveOrbits
   def orbitter: $;
   $ -> orbitMap::get -> #
   <~[]>
       def orbits: [ $ , $ -> resolveOrbits ... ];
-      $orbits -> { key: $orbitter, value: $ } -> orbitMap::put -> !VOID
+      $orbits -> { orbitter: $orbitter, around: $ } -> orbitMap::put -> !VOID
       $orbits !
   <> $ !
 end resolveOrbits
 
-[ $orbitMap::entries -> $.key -> resolveOrbits -> $::length ] -> list/sum -> !OUT::write
+[ $orbitMap::entries -> $.orbitter -> resolveOrbits -> $::length ] -> list/sum -> !OUT::write
 '
 ' -> !OUT::write
 
 templates findPath
   def fromOrbits: $(1) -> orbitMap::get;
   def toOrbits: $(2) -> orbitMap::get;
-  -1 -> #
+  0 -> #
 
-  <?($fromOrbits($) <=$toOrbits($)>)>
+  <?($fromOrbits(last+$) <=$toOrbits(last+$)>)>
     $ - 1 -> #
 
   <>
-    [ $fromOrbits(1..$)..., $toOrbits($+1..1:-1)... ] !
+    [ $fromOrbits(first..last+$+1)..., $toOrbits(last+$..first:-1)... ] !
 end findPath
 
-['YOU', 'SAN'] -> findPath -> $::length - 1 -> !OUT::write
+[object´'YOU', object´'SAN'] -> findPath -> $::length - 1 -> !OUT::write

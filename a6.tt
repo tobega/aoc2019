@@ -1,7 +1,7 @@
 include 'lib/list'
 
 composer orbit
-  [ <~'\)'> (<'\)'>) <'.*'> ]
+  [ <~'\)'> -> object´'$;' (<'\)'>) <object´'.*'> ]
 end orbit
 
 def orbitMap: [ $IN::lines -> orbit ];
@@ -19,7 +19,7 @@ templates allOrbits&{map:}
         -> { orbitter: $(2), orbits: $orbits} ] -> #
 end allOrbits
 
-def aroundCOM: 'COM' -> allOrbits&{map: $orbitMap};
+def aroundCOM: object´'COM' -> allOrbits&{map: $orbitMap};
 
 [ $aroundCOM... -> $.orbits::length ] -> list/sum -> !OUT::write
 '
@@ -38,4 +38,4 @@ templates findPath
     [ $fromOrbits(last..$:-1)..., $toOrbits($-1..last)... ] !
 end findPath
 
-['YOU', 'SAN'] -> findPath -> $::length - 1 -> !OUT::write
+[object´'YOU', object´'SAN'] -> findPath -> $::length - 1 -> !OUT::write
